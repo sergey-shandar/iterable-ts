@@ -14,7 +14,8 @@
   "keywords": [
     "typescript",
     "iterable",
-    "linq"
+    "linq",
+    "lazy"
   ],
   "author": "Sergey Shandar",
   "license": "Apache-2.0",
