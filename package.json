@@ -22,6 +22,10 @@
   "bugs": {
     "url": "https://github.com/sergey-shandar/iterable-ts/issues"
   },
+  "files": [
+    "*.js",
+    "*.d.ts"
+  ],
   "homepage": "https://github.com/sergey-shandar/iterable-ts#readme",
   "devDependencies": {
     "@types/chai": "^3.4.31",
