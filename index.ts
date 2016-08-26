@@ -156,7 +156,7 @@ export function min(c: I<number>): number|undefined {
 }
 
 export function max(c: I<number>): number|undefined {
-    return reduce(c, (a, b) => a < b ? a : b);
+    return reduce(c, (a, b) => a > b ? a : b);
 }
 
 export function sum(c: I<number>): number {
