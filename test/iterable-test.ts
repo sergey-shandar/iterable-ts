@@ -16,6 +16,16 @@ it("concat()", () => {
 it("compact()", () => {
     iterableEqual(iterable.compact([0, 1, false, 2, '', 3]), [1, 2, 3]);
 })
+it("drop()", () => {
+    iterableEqual(iterable.drop([1, 2, 3]), [2, 3]);
+    iterableEqual(iterable.drop([1, 2, 3], 2), [3]);
+    iterableEqual(iterable.drop([1, 2, 3], 5), []);
+    iterableEqual(iterable.drop([1, 2, 3], 0), [1, 2, 3]);
+})
+it("join()", () => {
+    iterable.join(['a', 'b', 'c'], '~').should.equal("a~b~c");
+    iterable.join([], '~').should.equal("");
+})
 it("flatMap()", () => {
     function *x() { yield 1; yield 4; }
     iterableEqual(iterable.flatMap(x, v => [v, v]), [1, 1, 4, 4]);

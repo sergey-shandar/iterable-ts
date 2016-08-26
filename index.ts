@@ -76,8 +76,9 @@ export function flatMapIdentity<T>(value: T): I<T> {
 }
 
 export function flatMap<T, R>(a: I<T>, f: FlatMapFunc<T, R>): I<R> {
+    const s = stateless(a);
     function *result() {
-        for (const cv of stateless(a)) {
+        for (const cv of s) {
             yield* stateless(f(cv));
         }
     }
@@ -91,15 +92,63 @@ export function map<T, R>(a: I<T>, f: MapFunc<T, R>): I<R> {
 }
 
 export function concat<T>(a: I<T>, b: I<T>): I<T> {
+    const sa = stateless(a);
+    const sb = stateless(b);
     function *result() {
-        yield *stateless(a);
-        yield *stateless(b);
+        yield *sa;
+        yield *sb;
     }
     return stateless(result);
 }
 
 export function flatten<T>(c: I<I<T>>): I<T> {
     return flatMap(c, v => v);
+}
+
+export type FilterFunc<T> = MapFunc<T, boolean>;
+
+export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFunc<T, T> {
+    return value => filterFunc(value) ? [value] : [];
+}
+
+export function filter<T>(c: I<T>, f: MapFunc<T, boolean>): I<T> {
+    return flatMap(c, filterFuncToFlatMapFunc(f));
+}
+
+export function compact<T>(c: I<T>): I<T> {
+    return filter(c, Boolean);
+}
+
+export class WithIndex<T> {
+    constructor(public readonly value: T, public readonly index: number) {}
+}
+
+export function withIndex<T>(c: I<T>): I<WithIndex<T>> {
+    const s = stateless(c);
+    function *result() {
+        let i = 0;
+        for (const v of s) {
+            yield new WithIndex(v, i);
+            ++i;
+        }
+    }
+    return stateless(result);
+}
+
+export function drop<T>(c: I<T>, n: number = 1): I<T> {
+    return map(filter(withIndex(c), v => v.index >= n), v => v.value);
+}
+
+export function reduce<T>(c: I<T>, r: ReduceFunc<T>): T|undefined {
+    let result: T|undefined = undefined;
+    forEach(c, v => {
+        result = result === undefined ? v : r(result, v);
+    });
+    return result;
+}
+
+export function join(c: I<string>, s: string = ","): string {
+    return reduce(c, (a, b) => a + s + b) || "";
 }
 
 export function forEach<T>(c: I<T>, f: (v: T) => void): void {
@@ -160,20 +209,6 @@ export function range(a: number, b: number): I<number> {
         }
     }
     return stateless(result);
-}
-
-export type FilterFunc<T> = MapFunc<T, boolean>;
-
-export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFunc<T, T> {
-    return value => filterFunc(value) ? [value] : [];
-}
-
-export function filter<T>(c: I<T>, f: MapFunc<T, boolean>): I<T> {
-    return flatMap(c, filterFuncToFlatMapFunc(f));
-}
-
-export function compact<T>(c: I<T>): I<T> {
-    return filter(c, Boolean);
 }
 
 export namespace async {
