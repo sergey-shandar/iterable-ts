@@ -151,6 +151,18 @@ export function join(c: I<string>, s: string = ","): string {
     return reduce(c, (a, b) => a + s + b) || "";
 }
 
+export function min(c: I<number>): number|undefined {
+    return reduce(c, (a, b) => a < b ? a : b);
+}
+
+export function max(c: I<number>): number|undefined {
+    return reduce(c, (a, b) => a > b ? a : b);
+}
+
+export function sum(c: I<number>): number {
+    return reduce(c, (a, b) => a + b) || 0;
+}
+
 export function forEach<T>(c: I<T>, f: (v: T) => void): void {
     for (const v of stateless(c)) {
         f(v);

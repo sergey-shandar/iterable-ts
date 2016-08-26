@@ -34,6 +34,18 @@ it("flatten()", () => {
     function *x() { yield 1; yield 4; }
     iterableEqual(iterable.flatten([x, x]), [ 1, 4, 1, 4]);
 });
+it("min()", () => {
+    chai.assert.equal(iterable.min([4, 2, 8, 6]), 2);
+    chai.assert.equal(iterable.min([]), undefined);
+});
+it("max()", () => {
+    chai.assert.equal(iterable.max([4, 2, 8, 6]), 8);
+    chai.assert.equal(iterable.max([]), undefined);
+});
+it("sum()", () => {
+    iterable.sum([4, 2, 8, 6]).should.equal(20);
+    iterable.sum([]).should.equal(0);
+});
 it("identity()", () => iterableEqual(iterable.flatMapIdentity(5), [5]));
 it("groupBy()", () => {
     const m = iterable.groupBy([ "a", "b", "x", "b" ], k => k, (a, b) => a + b);
