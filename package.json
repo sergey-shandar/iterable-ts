@@ -1,11 +1,13 @@
 {
   "name": "iterable-ts",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A TypeScript library for working with iterable types",
   "main": "index.js",
   "scripts": {
     "prepublish": "tsc",
-    "test": "tsc && istanbul cover node_modules/mocha/bin/_mocha && istanbul check-coverage"
+    "test": "tsc && istanbul cover node_modules/mocha/bin/_mocha && istanbul check-coverage",
+    "typedoc": "typedoc",
+    "istanbul": "istanbul"
   },
   "repository": {
     "type": "git",
@@ -33,6 +35,7 @@
     "chai": "^3.5.0",
     "istanbul": "^0.4.5",
     "mocha": "^3.0.2",
+    "typedoc": "https://github.com/zakhenry/typedoc/releases/download/v0.4.6/typedoc-0.4.6.tgz",
     "typescript": "^2.0.0"
   },
   "dependencies": {

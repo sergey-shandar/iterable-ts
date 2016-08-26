@@ -84,9 +84,9 @@ export function flatMap<T, R>(a: I<T>, f: FlatMapFunc<T, R>): I<R> {
     return stateless(result);
 }
 
-export type FlatFunc<T, R> = (value: T) => R;
+export type MapFunc<T, R> = (value: T) => R;
 
-export function map<T, R>(a: I<T>, f: FlatFunc<T, R>): I<R> {
+export function map<T, R>(a: I<T>, f: MapFunc<T, R>): I<R> {
     return flatMap(a, x => [f(x)]);
 }
 
@@ -160,6 +160,20 @@ export function range(a: number, b: number): I<number> {
         }
     }
     return stateless(result);
+}
+
+export type FilterFunc<T> = MapFunc<T, boolean>;
+
+export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFunc<T, T> {
+    return value => filterFunc(value) ? [value] : [];
+}
+
+export function filter<T>(c: I<T>, f: MapFunc<T, boolean>): I<T> {
+    return flatMap(c, filterFuncToFlatMapFunc(f));
+}
+
+export function compact<T>(c: I<T>): I<T> {
+    return filter(c, Boolean);
 }
 
 export namespace async {

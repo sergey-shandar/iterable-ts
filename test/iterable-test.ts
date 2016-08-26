@@ -13,6 +13,9 @@ it("concat()", () => {
     const m = [9, 7];
     iterableEqual(iterable.concat(m, m), [9, 7, 9, 7]);
 });
+it("compact()", () => {
+    iterableEqual(iterable.compact([0, 1, false, 2, '', 3]), [1, 2, 3]);
+})
 it("flatMap()", () => {
     function *x() { yield 1; yield 4; }
     iterableEqual(iterable.flatMap(x, v => [v, v]), [1, 1, 4, 4]);

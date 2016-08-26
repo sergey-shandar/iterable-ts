@@ -1,5 +1,3 @@
-instrumentation:
-    include-all-sources: true
 check:
     global:
         statements: 100
