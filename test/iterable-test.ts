@@ -11,6 +11,12 @@ describe("class Sequence", () => {
         await iterable.range(0, 100).asyncForEach(v => result += v);
         result.should.equal(99 * 100 / 2);
     });
+    it("asyncGroupBy()", async () => {
+        const m = await iterable
+            .sequence([ "a", "b", "x", "b" ])
+            .asyncGroupBy(k => k, (a, b) => a + b);
+        m.should.deep.equal({ "a": "a", "b": "bb", "x": "x" });
+    });
     it("concat()", () => {
         function *x() { yield 1; yield 3; }
         iterableEqual(iterable.sequence(x).concat(x), [1, 3, 1, 3]);
@@ -96,9 +102,3 @@ it("cache()", () => {
     counter.should.equal(1);
 });
 it("range()", () => iterableEqual(iterable.range(10, 15), [10, 11, 12, 13, 14]));
-describe("namespace async", function() {
-    it("groupBy()", async () => {
-        const m = await iterable.async.groupBy([ "a", "b", "x", "b" ], k => k, (a, b) => a + b);
-        m.should.deep.equal({ "a": "a", "b": "bb", "x": "x" });
-    });
-});

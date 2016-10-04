@@ -29,6 +29,14 @@ export abstract class Sequence<T> implements Iterable<T> {
         }
     }
 
+    async asyncGroupBy(key: KeyFunc<T>, reduce: ReduceFunc<T>):
+        Promise<Map<T>> {
+
+        const result = new GroupBy<T>(key, reduce);
+        await this.asyncForEach(v => result.add(v));
+        return result.map;
+    }
+
     compact(): Sequence<T> {
         return this.filter(Boolean);
     }
@@ -228,11 +236,4 @@ export function range(a: number, b: number): Sequence<number> {
 }
 
 export namespace async {
-    export async function groupBy<T>(
-        c: I<T>, key: KeyFunc<T>, reduce: ReduceFunc<T>): Promise<Map<T>> {
-
-        const result = new GroupBy<T>(key, reduce);
-        await sequence(c).asyncForEach(v => result.add(v));
-        return result.map;
-    }
 }
