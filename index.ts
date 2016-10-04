@@ -70,6 +70,11 @@ export abstract class Sequence<T> implements Iterable<T> {
         return this.flatMap(x => [f(x)]);
     }
 
+    product<B, R>(b: I<B>, f: ProductFunc<T, B, R>): I<R> {
+        const bs = sequence(b);
+        return this.flatMap(av => bs.flatMap(bv => f(av, bv)));
+    }
+
     reduce(r: ReduceFunc<T>): T|undefined {
         let result: T|undefined = undefined;
         this.forEach(v => {
@@ -204,11 +209,6 @@ class GroupBy<T> {
         const old = this.map[k];
         this.map[k] = old === undefined ? v : this._reduce(old, v);
     }
-}
-
-export function product<A, B, R>(a: I<A>, b: I<B>, f: ProductFunc<A, B, R>): I<R> {
-    const bs = sequence(b);
-    return sequence(a).flatMap(av => bs.flatMap(bv => f(av, bv)));
 }
 
 export function range(a: number, b: number): I<number> {

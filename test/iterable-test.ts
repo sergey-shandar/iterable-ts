@@ -40,6 +40,11 @@ describe("class Sequence", () => {
             .groupBy(k => k, (a, b) => a + b);
         m.should.deep.equal({ "a": "a", "b": "bb", "x": "x" });
     });
+    it("product()", () => {
+        iterableEqual(
+            iterable.sequence([1, 2]).product([10, 20], (a, b) => [a + b]),
+            [11, 21, 12, 22]);
+    });
 });
 
 it("join()", () => {
@@ -86,9 +91,6 @@ it("cache()", () => {
     counter.should.equal(1);
 });
 it("range()", () => iterableEqual(iterable.range(10, 15), [10, 11, 12, 13, 14]));
-it("product()", () => {
-    iterableEqual(iterable.product([1, 2], [10, 20], (a, b) => [a + b]), [11, 21, 12, 22]);
-});
 describe("namespace async", function() {
     it("forEach()", async () => {
         let result = 0;
