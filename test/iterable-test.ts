@@ -70,6 +70,14 @@ describe("class Sequence", () => {
         (<number> iterable.sequence(x).get(1)).should.equal(3);
         chai.assert.isUndefined(iterable.sequence(x).get(2));
     })
+    it("toArraySequence()", () => {
+        const x = [ 2, 3];
+        iterable.sequence(x).toArraySequence().toArray().should.equal(x);
+        const a = iterable.sequence(x).map(v => v * v).toArraySequence();
+        const y = a.toArray();
+        y.should.deep.equal([4, 9]);
+        y.should.equal(a.toArray());
+    })
 });
 
 it("join()", () => {
@@ -94,27 +102,6 @@ it("sum()", () => {
 });
 it("identity()", () => iterableEqual(iterable.flatMapIdentity(5), [5]));
 it("values()", () => iterableEqual(iterable.values({ a: "x", b: "c"}), ["x", "c"]));
-it("lazyArray()", () => {
-    let counter = 0;
-    function *result() {
-        yield 1;
-        yield 2;
-        ++counter;
-    }
-    const x = iterable.lazyArray(result);
-    counter.should.equal(0);
-
-    const a = iterable.sequence(x).toArray();
-    counter.should.equal(1);
-    a.should.deep.equal([1, 2]);
-
-    const b = iterable.sequence(x).toArray();
-    counter.should.equal(1);
-    b.should.equal(a);
-
-    iterableEqual(iterable.sequence(x).map(v => v * v), [1, 4]);
-    counter.should.equal(1);
-});
 it("range()", () => iterableEqual(iterable.range(10, 15), [10, 11, 12, 13, 14]));
 it("productFuncS()", () => {
     function product(a: number, b: number): number[] {
