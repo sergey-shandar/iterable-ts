@@ -102,3 +102,9 @@ it("cache()", () => {
     counter.should.equal(1);
 });
 it("range()", () => iterableEqual(iterable.range(10, 15), [10, 11, 12, 13, 14]));
+it("productFuncS()", () => {
+    function product(a: number, b: number): number[] {
+        return [a, b];
+    }
+    iterableEqual(iterable.productFuncS(product)(1, 2), [1, 2]);
+});
