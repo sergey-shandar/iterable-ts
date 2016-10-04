@@ -26,6 +26,8 @@ export abstract class Sequence<T> implements Iterable<T> {
 
     abstract get(i: number): T|undefined;
 
+    abstract toArraySequence(): ArraySequence<T>;
+
     async asyncForEach(f: (v: T) => void): Promise<void> {
         for (const v of this) {
             f(v);
@@ -116,20 +118,19 @@ export abstract class Sequence<T> implements Iterable<T> {
     }
 }
 
-abstract class ArraySequenceBase<T> extends Sequence<T> {
+export class ArraySequence<T> extends Sequence<T> {
+
+    constructor(private readonly _array: T[]) { super(); }
+
+    toArray() { return this._array; }
 
     [Symbol.iterator]() { return this.toArray()[Symbol.iterator](); }
 
     size() { return this.toArray().length; }
 
     get(i: number) { return this.toArray()[i]; }
-}
 
-class ArraySequence<T> extends ArraySequenceBase<T> {
-
-    constructor(private readonly _array: T[]) { super(); }
-
-    toArray() { return this._array; }
+    toArraySequence() { return this; }
 }
 
 class IteratorSequence<T> extends Sequence<T> {
@@ -150,18 +151,8 @@ class IteratorSequence<T> extends Sequence<T> {
         }
         return undefined;
     }
-}
 
-class LazyArraySequence<T> extends ArraySequenceBase<T> {
-
-    private _getArray: () => T[];
-
-    constructor(i: I<T>) {
-        super();
-        this._getArray = lazy(() => sequence(i).toArray());
-    }
-
-    toArray() { return this._getArray(); }
+    toArraySequence() { return new ArraySequence(this.toArray()); }
 }
 
 export type I<T> = Sequence<T> | (() => IterableIterator<T>) | T[];
@@ -176,12 +167,8 @@ export function sequence<T>(i: I<T>): Sequence<T> {
     }
 }
 
-export function array<T>(...a: T[]): Sequence<T> {
+export function array<T>(...a: T[]): ArraySequence<T> {
     return new ArraySequence(a);
-}
-
-export function lazyArray<T>(a: I<T>): Sequence<T> {
-    return new LazyArraySequence(a);
 }
 
 export type FlatMapFuncI<T, O> = (value: T) => I<O>;
