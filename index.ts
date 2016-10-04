@@ -53,6 +53,18 @@ export abstract class Sequence<T> implements Iterable<T> {
     map<R>(f: MapFunc<T, R>): Sequence<R> {
         return this.flatMap(x => [f(x)]);
     }
+
+    withIndex(): Sequence<WithIndex<T>> {
+        const s = this;
+        function *result() {
+            let i = 0;
+            for (const v of s) {
+                yield new WithIndex(v, i);
+                ++i;
+            }
+        }
+        return sequence(result);
+    }
 }
 
 class FromArray<T> extends Sequence<T> {
@@ -119,20 +131,8 @@ export class WithIndex<T> {
     constructor(public readonly value: T, public readonly index: number) {}
 }
 
-export function withIndex<T>(c: I<T>): I<WithIndex<T>> {
-    const s = sequence(c);
-    function *result() {
-        let i = 0;
-        for (const v of s) {
-            yield new WithIndex(v, i);
-            ++i;
-        }
-    }
-    return sequence(result);
-}
-
 export function drop<T>(c: I<T>, n: number = 1): I<T> {
-    return sequence(withIndex(c)).filter(v => v.index >= n).map(v => v.value);
+    return sequence(c).withIndex().filter(v => v.index >= n).map(v => v.value);
 }
 
 export function reduce<T>(c: I<T>, r: ReduceFunc<T>): T|undefined {
