@@ -32,6 +32,10 @@ export abstract class Sequence<T> implements Iterable<T> {
         return sequence(result);
     }
 
+    filter(f: MapFunc<T, boolean>): Sequence<T> {
+        return this.flatMap(filterFuncToFlatMapFunc(f));
+    }
+
     flatMap<R>(f: FlatMapFunc<T, R>): Sequence<R> {
         const a = this;
         function *result() {
@@ -97,7 +101,7 @@ export function flatMapIdentity<T>(value: T): I<T> {
 
 export type MapFunc<T, R> = (value: T) => R;
 
-export function flatten<T>(c: I<I<T>>): I<T> {
+export function flatten<T>(c: I<I<T>>): Sequence<T> {
     return sequence<I<T>>(c).flatMap(v => v);
 }
 
@@ -107,12 +111,8 @@ export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFu
     return value => filterFunc(value) ? [value] : [];
 }
 
-export function filter<T>(c: I<T>, f: MapFunc<T, boolean>): I<T> {
-    return sequence(c).flatMap(filterFuncToFlatMapFunc(f));
-}
-
 export function compact<T>(c: I<T>): I<T> {
-    return filter(c, Boolean);
+    return sequence(c).filter(Boolean);
 }
 
 export class WithIndex<T> {
@@ -132,7 +132,7 @@ export function withIndex<T>(c: I<T>): I<WithIndex<T>> {
 }
 
 export function drop<T>(c: I<T>, n: number = 1): I<T> {
-    return sequence(filter(withIndex(c), v => v.index >= n)).map(v => v.value);
+    return sequence(withIndex(c)).filter(v => v.index >= n).map(v => v.value);
 }
 
 export function reduce<T>(c: I<T>, r: ReduceFunc<T>): T|undefined {
