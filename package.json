@@ -1,6 +1,6 @@
 {
   "name": "iterable-ts",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A TypeScript library for working with iterable types",
   "main": "index.js",
   "scripts": {
@@ -39,6 +39,6 @@
     "typescript": "^2.0.3"
   },
   "dependencies": {
-    "ts-helpers": "^1.1.1"
+    "tslib": "^1.0.0"
   }
 }

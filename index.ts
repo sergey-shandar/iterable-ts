@@ -1,4 +1,4 @@
-import "ts-helpers";
+import "tslib";
 
 export function lazy<T>(f: () => T): () => T {
     let called = false;
