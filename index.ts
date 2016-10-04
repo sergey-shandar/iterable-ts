@@ -126,7 +126,7 @@ class FromIterator<T> extends Sequence<T> {
     [Symbol.iterator]() { return this._f(); }
 }
 
-class Cache<T> extends Sequence<T> {
+export class Cache<T> extends Sequence<T> {
     private _getArray: () => T[];
 
     constructor(i: I<T>) {
@@ -150,7 +150,11 @@ export function sequence<T>(i: I<T>): Sequence<T> {
     }
 }
 
-export function cache<T>(a: I<T>): I<T> {
+export function array<T>(a: T[]): Sequence<T> {
+    return new FromArray(a);
+}
+
+export function cache<T>(a: I<T>): Cache<T> {
     return new Cache(a);
 }
 
