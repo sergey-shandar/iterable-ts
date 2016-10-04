@@ -18,18 +18,18 @@ describe("class Sequence", () => {
         iterableEqual(
             iterable.sequence([0, 1, false, 2, '', 3]).compact(), [1, 2, 3]);
     })
+    it("drop()", () => {
+        iterableEqual(iterable.sequence([1, 2, 3]).drop(), [2, 3]);
+        iterableEqual(iterable.sequence([1, 2, 3]).drop(2), [3]);
+        iterableEqual(iterable.sequence([1, 2, 3]).drop(5), []);
+        iterableEqual(iterable.sequence([1, 2, 3]).drop(0), [1, 2, 3]);
+    })
     it("flatMap()", () => {
         function *x() { yield 1; yield 4; }
         iterableEqual(iterable.sequence(x).flatMap(v => [v, v]), [1, 1, 4, 4]);
     });
 });
 
-it("drop()", () => {
-    iterableEqual(iterable.drop([1, 2, 3]), [2, 3]);
-    iterableEqual(iterable.drop([1, 2, 3], 2), [3]);
-    iterableEqual(iterable.drop([1, 2, 3], 5), []);
-    iterableEqual(iterable.drop([1, 2, 3], 0), [1, 2, 3]);
-})
 it("join()", () => {
     iterable.join(['a', 'b', 'c'], '~').should.equal("a~b~c");
     iterable.join([], '~').should.equal("");

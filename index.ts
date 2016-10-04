@@ -36,6 +36,10 @@ export abstract class Sequence<T> implements Iterable<T> {
         return sequence(result);
     }
 
+    drop(n: number = 1): Sequence<T> {
+        return this.withIndex().filter(v => v.index >= n).map(v => v.value);
+    }
+
     filter(f: MapFunc<T, boolean>): Sequence<T> {
         return this.flatMap(filterFuncToFlatMapFunc(f));
     }
@@ -129,10 +133,6 @@ export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFu
 
 export class WithIndex<T> {
     constructor(public readonly value: T, public readonly index: number) {}
-}
-
-export function drop<T>(c: I<T>, n: number = 1): I<T> {
-    return sequence(c).withIndex().filter(v => v.index >= n).map(v => v.value);
 }
 
 export function reduce<T>(c: I<T>, r: ReduceFunc<T>): T|undefined {
