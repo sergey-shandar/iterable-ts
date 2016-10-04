@@ -22,10 +22,20 @@ export abstract class Sequence<T> implements Iterable<T> {
 
     abstract [Symbol.iterator](): Iterator<T>;
 
-    flatMap<R>(f: FlatMapFunc<T, R>): Sequence<R> {
-        const s = this;
+    concat(b: I<T>): Sequence<T> {
+        const sa = this;
+        const sb = sequence(b);
         function *result() {
-            for (const cv of s) {
+            yield *sa;
+            yield *sb;
+        }
+        return sequence(result);
+    }
+
+    flatMap<R>(f: FlatMapFunc<T, R>): Sequence<R> {
+        const a = this;
+        function *result() {
+            for (const cv of a) {
                 yield* sequence(f(cv));
             }
         }
@@ -87,18 +97,8 @@ export function flatMapIdentity<T>(value: T): I<T> {
 
 export type MapFunc<T, R> = (value: T) => R;
 
-export function concat<T>(a: I<T>, b: I<T>): I<T> {
-    const sa = sequence(a);
-    const sb = sequence(b);
-    function *result() {
-        yield *sa;
-        yield *sb;
-    }
-    return sequence(result);
-}
-
 export function flatten<T>(c: I<I<T>>): I<T> {
-    return sequence(c).flatMap(v => v);
+    return sequence<I<T>>(c).flatMap(v => v);
 }
 
 export type FilterFunc<T> = MapFunc<T, boolean>;
