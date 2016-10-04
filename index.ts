@@ -67,9 +67,10 @@ export abstract class Sequence<T> implements Iterable<T> {
 
     flatMap<R>(f: FlatMapFuncI<T, R>): Sequence<R> {
         const a = this;
+        const fs = flatMapFuncS(f);
         function *result() {
             for (const cv of a) {
-                yield* sequence(f(cv));
+                yield* fs(cv);
             }
         }
         return sequence(result);
@@ -156,6 +157,10 @@ export function cache<T>(a: I<T>): I<T> {
 export type FlatMapFuncI<T, O> = (value: T) => I<O>;
 
 export type FlatMapFuncS<T, O> = (value: T) => Sequence<O>;
+
+export function flatMapFuncS<T, O>(f: FlatMapFuncI<T, O>): FlatMapFuncS<T, O> {
+    return (v: T) => sequence(f(v));
+}
 
 export function flatMapIdentity<T>(value: T): Sequence<T> {
     return sequence([value]);
