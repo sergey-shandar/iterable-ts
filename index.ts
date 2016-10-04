@@ -206,6 +206,10 @@ export type ProductFuncI<A, B, O> = (a: A, b: B) => I<O>;
 
 export type ProductFuncS<A, B, O> = (a: A, b: B) => Sequence<O>;
 
+export function productFuncS<A, B, O>(i: ProductFuncI<A, B, O>): ProductFuncS<A, B, O> {
+    return (a, b) => sequence(i(a, b));
+}
+
 export interface Map<T> {
     [id: string]: T;
 }
