@@ -68,11 +68,11 @@ it("cache()", () => {
     const x = iterable.cache(result);
     counter.should.equal(0);
 
-    const a = iterable.toArray(x);
+    const a = iterable.sequence(x).toArray();
     counter.should.equal(1);
     a.should.deep.equal([1, 2]);
 
-    const b = iterable.toArray(x);
+    const b = iterable.sequence(x).toArray();
     counter.should.equal(1);
     b.should.equal(a);
 

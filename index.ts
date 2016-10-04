@@ -42,7 +42,7 @@ class Cache<T> extends Sequence<T> {
 
     constructor(i: I<T>) {
         super();
-        this._getArray = lazy(() => toArray(i));
+        this._getArray = lazy(() => sequence(i).toArray());
     }
 
     toArray() { return this._getArray(); }
@@ -61,9 +61,11 @@ export function sequence<T>(i: I<T>): Sequence<T> {
     }
 }
 
+/*
 export function toArray<T>(i: I<T>): T[] {
     return sequence(i).toArray();
 }
+*/
 
 export function cache<T>(a: I<T>): I<T> {
     return new Cache(a);
