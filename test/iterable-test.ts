@@ -6,6 +6,11 @@ import { iterableEqual } from "./iterable-helper";
 chai.should();
 
 describe("class Sequence", () => {
+    it("asyncForEach()", async () => {
+        let result = 0;
+        await iterable.range(0, 100).asyncForEach(v => result += v);
+        result.should.equal(99 * 100 / 2);
+    });
     it("concat()", () => {
         function *x() { yield 1; yield 3; }
         iterableEqual(iterable.sequence(x).concat(x), [1, 3, 1, 3]);
@@ -92,11 +97,6 @@ it("cache()", () => {
 });
 it("range()", () => iterableEqual(iterable.range(10, 15), [10, 11, 12, 13, 14]));
 describe("namespace async", function() {
-    it("forEach()", async () => {
-        let result = 0;
-        await iterable.async.forEach(iterable.range(0, 100), v => result += v);
-        result.should.equal(99 * 100 / 2);
-    });
     it("groupBy()", async () => {
         const m = await iterable.async.groupBy([ "a", "b", "x", "b" ], k => k, (a, b) => a + b);
         m.should.deep.equal({ "a": "a", "b": "bb", "x": "x" });

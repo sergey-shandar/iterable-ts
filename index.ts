@@ -22,6 +22,13 @@ export abstract class Sequence<T> implements Iterable<T> {
 
     abstract [Symbol.iterator](): Iterator<T>;
 
+    async asyncForEach(f: (v: T) => void): Promise<void> {
+        for (const v of this) {
+            f(v);
+            await immediate();
+        }
+    }
+
     compact(): Sequence<T> {
         return this.filter(Boolean);
     }
@@ -186,7 +193,7 @@ export interface Map<T> {
     [id: string]: T;
 }
 
-export function keys<T>(m: Map<T>): I<string> {
+export function keys<T>(m: Map<T>): Sequence<string> {
     function *result() {
         for (const k in m) {
             yield k;
@@ -195,7 +202,7 @@ export function keys<T>(m: Map<T>): I<string> {
     return sequence(result);
 }
 
-export function values<T>(m: Map<T>): I<T> {
+export function values<T>(m: Map<T>): Sequence<T> {
     return sequence(keys(m)).map(k => m[k]);
 }
 
@@ -211,7 +218,7 @@ class GroupBy<T> {
     }
 }
 
-export function range(a: number, b: number): I<number> {
+export function range(a: number, b: number): Sequence<number> {
     function *result() {
         for (let i = a; i < b; ++i) {
             yield i;
@@ -221,18 +228,11 @@ export function range(a: number, b: number): I<number> {
 }
 
 export namespace async {
-    export async function forEach<T>(c: I<T>, f: (v: T) => void): Promise<void> {
-        for (const v of sequence(c)) {
-            f(v);
-            await immediate();
-        }
-    }
-
     export async function groupBy<T>(
         c: I<T>, key: KeyFunc<T>, reduce: ReduceFunc<T>): Promise<Map<T>> {
 
         const result = new GroupBy<T>(key, reduce);
-        await forEach(c, v => result.add(v));
+        await sequence(c).asyncForEach(v => result.add(v));
         return result.map;
     }
 }
