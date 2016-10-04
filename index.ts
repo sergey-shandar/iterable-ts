@@ -16,28 +16,28 @@ export function immediate(): Promise<void> {
     return new Promise(resolve => setImmediate(resolve));
 }
 
-export abstract class Stateless<T> implements Iterable<T> {
+export abstract class Sequence<T> implements Iterable<T> {
 
     abstract toArray(): T[];
 
     abstract [Symbol.iterator](): Iterator<T>;
 }
 
-class FromArray<T> extends Stateless<T> {
+class FromArray<T> extends Sequence<T> {
     constructor(private readonly _array: T[]) { super(); }
 
     toArray() { return this._array; }
     [Symbol.iterator]() { return this._array[Symbol.iterator](); }
 }
 
-class FromIterator<T> extends Stateless<T> {
+class FromIterator<T> extends Sequence<T> {
     constructor(private readonly _f: () => Iterator<T>) { super(); }
 
     toArray() { return Array.from(this); }
     [Symbol.iterator]() { return this._f(); }
 }
 
-class Cache<T> extends Stateless<T> {
+class Cache<T> extends Sequence<T> {
     private _getArray: () => T[];
 
     constructor(i: I<T>) {
@@ -49,10 +49,10 @@ class Cache<T> extends Stateless<T> {
     [Symbol.iterator]() { return this._getArray()[Symbol.iterator](); }
 }
 
-export type I<T> = Stateless<T> | (() => IterableIterator<T>) | T[];
+export type I<T> = Sequence<T> | (() => IterableIterator<T>) | T[];
 
-export function stateless<T>(i: I<T>): Stateless<T> {
-    if (i instanceof Stateless) {
+export function sequence<T>(i: I<T>): Sequence<T> {
+    if (i instanceof Sequence) {
         return i;
     } else if (i instanceof Array) {
         return new FromArray(i);
@@ -62,7 +62,7 @@ export function stateless<T>(i: I<T>): Stateless<T> {
 }
 
 export function toArray<T>(i: I<T>): T[] {
-    return stateless(i).toArray();
+    return sequence(i).toArray();
 }
 
 export function cache<T>(a: I<T>): I<T> {
@@ -76,13 +76,13 @@ export function flatMapIdentity<T>(value: T): I<T> {
 }
 
 export function flatMap<T, R>(a: I<T>, f: FlatMapFunc<T, R>): I<R> {
-    const s = stateless(a);
+    const s = sequence(a);
     function *result() {
         for (const cv of s) {
-            yield* stateless(f(cv));
+            yield* sequence(f(cv));
         }
     }
-    return stateless(result);
+    return sequence(result);
 }
 
 export type MapFunc<T, R> = (value: T) => R;
@@ -92,13 +92,13 @@ export function map<T, R>(a: I<T>, f: MapFunc<T, R>): I<R> {
 }
 
 export function concat<T>(a: I<T>, b: I<T>): I<T> {
-    const sa = stateless(a);
-    const sb = stateless(b);
+    const sa = sequence(a);
+    const sb = sequence(b);
     function *result() {
         yield *sa;
         yield *sb;
     }
-    return stateless(result);
+    return sequence(result);
 }
 
 export function flatten<T>(c: I<I<T>>): I<T> {
@@ -124,7 +124,7 @@ export class WithIndex<T> {
 }
 
 export function withIndex<T>(c: I<T>): I<WithIndex<T>> {
-    const s = stateless(c);
+    const s = sequence(c);
     function *result() {
         let i = 0;
         for (const v of s) {
@@ -132,7 +132,7 @@ export function withIndex<T>(c: I<T>): I<WithIndex<T>> {
             ++i;
         }
     }
-    return stateless(result);
+    return sequence(result);
 }
 
 export function drop<T>(c: I<T>, n: number = 1): I<T> {
@@ -164,7 +164,7 @@ export function sum(c: I<number>): number {
 }
 
 export function forEach<T>(c: I<T>, f: (v: T) => void): void {
-    for (const v of stateless(c)) {
+    for (const v of sequence(c)) {
         f(v);
     }
 }
@@ -185,7 +185,7 @@ export function keys<T>(m: Map<T>): I<string> {
             yield k;
         }
     }
-    return stateless(result);
+    return sequence(result);
 }
 
 export function values<T>(m: Map<T>): I<T> {
@@ -220,12 +220,12 @@ export function range(a: number, b: number): I<number> {
             yield i;
         }
     }
-    return stateless(result);
+    return sequence(result);
 }
 
 export namespace async {
     export async function forEach<T>(c: I<T>, f: (v: T) => void): Promise<void> {
-        for (const v of stateless(c)) {
+        for (const v of sequence(c)) {
             f(v);
             await immediate();
         }

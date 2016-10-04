@@ -9,7 +9,7 @@ it("concat()", () => {
     function *x() { yield 1; yield 3; }
     iterableEqual(iterable.concat(x, x), [1, 3, 1, 3]);
     iterableEqual(
-        iterable.concat(iterable.stateless(x), iterable.stateless(x)), [1, 3, 1, 3]);
+        iterable.concat(iterable.sequence(x), iterable.sequence(x)), [1, 3, 1, 3]);
     const m = [9, 7];
     iterableEqual(iterable.concat(m, m), [9, 7, 9, 7]);
 });
