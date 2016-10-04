@@ -22,6 +22,10 @@ export abstract class Sequence<T> implements Iterable<T> {
 
     abstract [Symbol.iterator](): Iterator<T>;
 
+    compact(): Sequence<T> {
+        return this.filter(Boolean);
+    }
+
     concat(b: I<T>): Sequence<T> {
         const sa = this;
         const sb = sequence(b);
@@ -109,10 +113,6 @@ export type FilterFunc<T> = MapFunc<T, boolean>;
 
 export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFunc<T, T> {
     return value => filterFunc(value) ? [value] : [];
-}
-
-export function compact<T>(c: I<T>): I<T> {
-    return sequence(c).filter(Boolean);
 }
 
 export class WithIndex<T> {

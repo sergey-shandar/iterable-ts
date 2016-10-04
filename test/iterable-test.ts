@@ -14,15 +14,15 @@ describe("class Sequence", () => {
         const m = [9, 7];
         iterableEqual(iterable.sequence(m).concat(m), [9, 7, 9, 7]);
     });
+    it("compact()", () => {
+        iterableEqual(
+            iterable.sequence([0, 1, false, 2, '', 3]).compact(), [1, 2, 3]);
+    })
     it("flatMap()", () => {
         function *x() { yield 1; yield 4; }
         iterableEqual(iterable.sequence(x).flatMap(v => [v, v]), [1, 1, 4, 4]);
     });
 });
-
-it("compact()", () => {
-    iterableEqual(iterable.compact([0, 1, false, 2, '', 3]), [1, 2, 3]);
-})
 
 it("drop()", () => {
     iterableEqual(iterable.drop([1, 2, 3]), [2, 3]);
