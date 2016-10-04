@@ -79,7 +79,6 @@ describe("class Sequence", () => {
         y.should.equal(a.toArray());
     })
 });
-
 it("join()", () => {
     iterable.join(['a', 'b', 'c'], '~').should.equal("a~b~c");
     iterable.join([], '~').should.equal("");
