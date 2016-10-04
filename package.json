@@ -30,13 +30,13 @@
   ],
   "homepage": "https://github.com/sergey-shandar/iterable-ts#readme",
   "devDependencies": {
-    "@types/chai": "^3.4.31",
+    "@types/chai": "^3.4.33",
     "@types/mocha": "^2.2.30",
     "chai": "^3.5.0",
     "istanbul": "^0.4.5",
-    "mocha": "^3.0.2",
+    "mocha": "^3.1.0",
     "typedoc": "https://github.com/zakhenry/typedoc/releases/download/v0.4.6/typedoc-0.4.6.tgz",
-    "typescript": "^2.0.0"
+    "typescript": "^2.0.3"
   },
   "dependencies": {
     "ts-helpers": "^1.1.1"
