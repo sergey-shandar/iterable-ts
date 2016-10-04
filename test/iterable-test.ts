@@ -70,14 +70,6 @@ describe("class Sequence", () => {
         (<number> iterable.sequence(x).get(1)).should.equal(3);
         chai.assert.isUndefined(iterable.sequence(x).get(2));
     })
-    it("toArraySequence()", () => {
-        const x = [ 2, 3];
-        iterable.sequence(x).toArraySequence().toArray().should.equal(x);
-        const a = iterable.sequence(x).map(v => v * v).toArraySequence();
-        const y = a.toArray();
-        y.should.deep.equal([4, 9]);
-        y.should.equal(a.toArray());
-    })
 });
 it("join()", () => {
     iterable.join(['a', 'b', 'c'], '~').should.equal("a~b~c");
@@ -102,9 +94,3 @@ it("sum()", () => {
 it("identity()", () => iterableEqual(iterable.flatMapIdentity(5), [5]));
 it("values()", () => iterableEqual(iterable.values({ a: "x", b: "c"}), ["x", "c"]));
 it("range()", () => iterableEqual(iterable.range(10, 15), [10, 11, 12, 13, 14]));
-it("productFuncS()", () => {
-    function product(a: number, b: number): number[] {
-        return [a, b];
-    }
-    iterableEqual(iterable.productFuncS(product)(1, 2), [1, 2]);
-});

@@ -26,8 +26,6 @@ export abstract class Sequence<T> implements Iterable<T> {
 
     abstract get(i: number): T|undefined;
 
-    abstract toArraySequence(): ArraySequence<T>;
-
     async asyncForEach(f: (v: T) => void): Promise<void> {
         for (const v of this) {
             f(v);
@@ -71,12 +69,11 @@ export abstract class Sequence<T> implements Iterable<T> {
         }
     }
 
-    flatMap<R>(f: FlatMapFuncI<T, R>): Sequence<R> {
+    flatMap<R>(f: FlatMapFunc<T, R>): Sequence<R> {
         const a = this;
-        const fs = flatMapFuncS(f);
         function *result() {
             for (const cv of a) {
-                yield* fs(cv);
+                yield* sequence(f(cv));
             }
         }
         return sequence(result);
@@ -92,7 +89,7 @@ export abstract class Sequence<T> implements Iterable<T> {
         return this.flatMap(x => [f(x)]);
     }
 
-    product<B, R>(b: I<B>, f: ProductFuncI<T, B, R>): Sequence<R> {
+    product<B, R>(b: I<B>, f: ProductFunc<T, B, R>): Sequence<R> {
         const bs = sequence(b);
         return this.flatMap(av => bs.flatMap(bv => f(av, bv)));
     }
@@ -118,7 +115,7 @@ export abstract class Sequence<T> implements Iterable<T> {
     }
 }
 
-export class ArraySequence<T> extends Sequence<T> {
+class ArraySequence<T> extends Sequence<T> {
 
     constructor(private readonly _array: T[]) { super(); }
 
@@ -167,20 +164,14 @@ export function sequence<T>(i: I<T>): Sequence<T> {
     }
 }
 
-export function array<T>(...a: T[]): ArraySequence<T> {
+export function array<T>(...a: T[]): Sequence<T> {
     return new ArraySequence(a);
 }
 
-export type FlatMapFuncI<T, O> = (value: T) => I<O>;
-
-export type FlatMapFuncS<T, O> = (value: T) => Sequence<O>;
-
-export function flatMapFuncS<T, O>(f: FlatMapFuncI<T, O>): FlatMapFuncS<T, O> {
-    return (v: T) => sequence(f(v));
-}
+export type FlatMapFunc<T, O> = (value: T) => I<O>;
 
 export function flatMapIdentity<T>(value: T): Sequence<T> {
-    return sequence([value]);
+    return array(value);
 }
 
 export type MapFunc<T, R> = (value: T) => R;
@@ -191,8 +182,8 @@ export function flatten<T>(c: I<I<T>>): Sequence<T> {
 
 export type FilterFunc<T> = MapFunc<T, boolean>;
 
-export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFuncS<T, T> {
-    return value => sequence(filterFunc(value) ? [value] : []);
+export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFunc<T, T> {
+    return value => filterFunc(value) ? array(value) : array<T>();
 }
 
 export class WithIndex<T> {
@@ -219,15 +210,7 @@ export type KeyFunc<T> = (value: T) => string;
 
 export type ReduceFunc<T> = (a: T, b: T) => T;
 
-export type ProductFuncI<A, B, O> = (a: A, b: B) => I<O>;
-
-export type ProductFuncS<A, B, O> = (a: A, b: B) => Sequence<O>;
-
-export function productFuncS<A, B, O>(i: ProductFuncI<A, B, O>):
-    ProductFuncS<A, B, O> {
-
-    return (a, b) => sequence(i(a, b));
-}
+export type ProductFunc<A, B, O> = (a: A, b: B) => I<O>;
 
 export interface Map<T> {
     [id: string]: T;
