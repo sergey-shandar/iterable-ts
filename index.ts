@@ -22,6 +22,10 @@ export abstract class Sequence<T> implements Iterable<T> {
 
     abstract [Symbol.iterator](): Iterator<T>;
 
+    abstract size(): number;
+
+    abstract get(i: number): T|undefined;
+
     async asyncForEach(f: (v: T) => void): Promise<void> {
         for (const v of this) {
             f(v);
@@ -112,21 +116,44 @@ export abstract class Sequence<T> implements Iterable<T> {
     }
 }
 
-class FromArray<T> extends Sequence<T> {
+abstract class ArraySequenceBase<T> extends Sequence<T> {
+
+    [Symbol.iterator]() { return this.toArray()[Symbol.iterator](); }
+
+    size() { return this.toArray().length; }
+
+    get(i: number) { return this.toArray()[i]; }
+}
+
+class ArraySequence<T> extends ArraySequenceBase<T> {
+
     constructor(private readonly _array: T[]) { super(); }
 
     toArray() { return this._array; }
-    [Symbol.iterator]() { return this._array[Symbol.iterator](); }
 }
 
-class FromIterator<T> extends Sequence<T> {
+class IteratorSequence<T> extends Sequence<T> {
+
     constructor(private readonly _f: () => Iterator<T>) { super(); }
 
     toArray() { return Array.from(this); }
+
     [Symbol.iterator]() { return this._f(); }
+
+    size() { return sum(this.map(() => 1)); }
+
+    get(i: number) {
+        for (const v of this.withIndex()) {
+            if (v.index === i) {
+                return v.value;
+            }
+        }
+        return undefined;
+    }
 }
 
-export class Cache<T> extends Sequence<T> {
+class LazyArraySequence<T> extends ArraySequenceBase<T> {
+
     private _getArray: () => T[];
 
     constructor(i: I<T>) {
@@ -135,7 +162,6 @@ export class Cache<T> extends Sequence<T> {
     }
 
     toArray() { return this._getArray(); }
-    [Symbol.iterator]() { return this._getArray()[Symbol.iterator](); }
 }
 
 export type I<T> = Sequence<T> | (() => IterableIterator<T>) | T[];
@@ -144,18 +170,18 @@ export function sequence<T>(i: I<T>): Sequence<T> {
     if (i instanceof Sequence) {
         return i;
     } else if (i instanceof Array) {
-        return new FromArray(i);
+        return new ArraySequence(i);
     } else {
-        return new FromIterator(i);
+        return new IteratorSequence(i);
     }
 }
 
-export function array<T>(a: T[]): Sequence<T> {
-    return new FromArray(a);
+export function array<T>(...a: T[]): Sequence<T> {
+    return new ArraySequence(a);
 }
 
-export function cache<T>(a: I<T>): Cache<T> {
-    return new Cache(a);
+export function lazyArray<T>(a: I<T>): Sequence<T> {
+    return new LazyArraySequence(a);
 }
 
 export type FlatMapFuncI<T, O> = (value: T) => I<O>;
