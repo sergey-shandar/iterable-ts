@@ -5,6 +5,13 @@ import { iterableEqual } from "./iterable-helper";
 
 chai.should();
 
+describe("class Sequence", () => {
+    it("flatMap()", () => {
+        function *x() { yield 1; yield 4; }
+        iterableEqual(iterable.sequence(x).flatMap(v => [v, v]), [1, 1, 4, 4]);
+    });
+});
+
 it("concat()", () => {
     function *x() { yield 1; yield 3; }
     iterableEqual(iterable.concat(x, x), [1, 3, 1, 3]);
@@ -13,9 +20,11 @@ it("concat()", () => {
     const m = [9, 7];
     iterableEqual(iterable.concat(m, m), [9, 7, 9, 7]);
 });
+
 it("compact()", () => {
     iterableEqual(iterable.compact([0, 1, false, 2, '', 3]), [1, 2, 3]);
 })
+
 it("drop()", () => {
     iterableEqual(iterable.drop([1, 2, 3]), [2, 3]);
     iterableEqual(iterable.drop([1, 2, 3], 2), [3]);
@@ -26,10 +35,6 @@ it("join()", () => {
     iterable.join(['a', 'b', 'c'], '~').should.equal("a~b~c");
     iterable.join([], '~').should.equal("");
 })
-it("flatMap()", () => {
-    function *x() { yield 1; yield 4; }
-    iterableEqual(iterable.flatMap(x, v => [v, v]), [1, 1, 4, 4]);
-});
 it("flatten()", () => {
     function *x() { yield 1; yield 4; }
     iterableEqual(iterable.flatten([x, x]), [ 1, 4, 1, 4]);
@@ -76,7 +81,7 @@ it("cache()", () => {
     counter.should.equal(1);
     b.should.equal(a);
 
-    iterableEqual(iterable.map(x, v => v * v), [1, 4]);
+    iterableEqual(iterable.sequence(x).map(v => v * v), [1, 4]);
     counter.should.equal(1);
 });
 it("range()", () => iterableEqual(iterable.range(10, 15), [10, 11, 12, 13, 14]));

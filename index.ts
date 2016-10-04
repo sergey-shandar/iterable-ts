@@ -21,6 +21,20 @@ export abstract class Sequence<T> implements Iterable<T> {
     abstract toArray(): T[];
 
     abstract [Symbol.iterator](): Iterator<T>;
+
+    flatMap<R>(f: FlatMapFunc<T, R>): Sequence<R> {
+        const s = this;
+        function *result() {
+            for (const cv of s) {
+                yield* sequence(f(cv));
+            }
+        }
+        return sequence(result);
+    }
+
+    map<R>(f: MapFunc<T, R>): Sequence<R> {
+        return this.flatMap(x => [f(x)]);
+    }
 }
 
 class FromArray<T> extends Sequence<T> {
@@ -61,12 +75,6 @@ export function sequence<T>(i: I<T>): Sequence<T> {
     }
 }
 
-/*
-export function toArray<T>(i: I<T>): T[] {
-    return sequence(i).toArray();
-}
-*/
-
 export function cache<T>(a: I<T>): I<T> {
     return new Cache(a);
 }
@@ -77,21 +85,7 @@ export function flatMapIdentity<T>(value: T): I<T> {
     return [value];
 }
 
-export function flatMap<T, R>(a: I<T>, f: FlatMapFunc<T, R>): I<R> {
-    const s = sequence(a);
-    function *result() {
-        for (const cv of s) {
-            yield* sequence(f(cv));
-        }
-    }
-    return sequence(result);
-}
-
 export type MapFunc<T, R> = (value: T) => R;
-
-export function map<T, R>(a: I<T>, f: MapFunc<T, R>): I<R> {
-    return flatMap(a, x => [f(x)]);
-}
 
 export function concat<T>(a: I<T>, b: I<T>): I<T> {
     const sa = sequence(a);
@@ -104,7 +98,7 @@ export function concat<T>(a: I<T>, b: I<T>): I<T> {
 }
 
 export function flatten<T>(c: I<I<T>>): I<T> {
-    return flatMap(c, v => v);
+    return sequence(c).flatMap(v => v);
 }
 
 export type FilterFunc<T> = MapFunc<T, boolean>;
@@ -114,7 +108,7 @@ export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFu
 }
 
 export function filter<T>(c: I<T>, f: MapFunc<T, boolean>): I<T> {
-    return flatMap(c, filterFuncToFlatMapFunc(f));
+    return sequence(c).flatMap(filterFuncToFlatMapFunc(f));
 }
 
 export function compact<T>(c: I<T>): I<T> {
@@ -138,7 +132,7 @@ export function withIndex<T>(c: I<T>): I<WithIndex<T>> {
 }
 
 export function drop<T>(c: I<T>, n: number = 1): I<T> {
-    return map(filter(withIndex(c), v => v.index >= n), v => v.value);
+    return sequence(filter(withIndex(c), v => v.index >= n)).map(v => v.value);
 }
 
 export function reduce<T>(c: I<T>, r: ReduceFunc<T>): T|undefined {
@@ -191,7 +185,7 @@ export function keys<T>(m: Map<T>): I<string> {
 }
 
 export function values<T>(m: Map<T>): I<T> {
-    return map(keys(m), k => m[k]);
+    return sequence(keys(m)).map(k => m[k]);
 }
 
 class GroupBy<T> {
@@ -213,7 +207,8 @@ export function groupBy<T>(c: I<T>, key: KeyFunc<T>, reduce: ReduceFunc<T>): Map
 }
 
 export function product<A, B, R>(a: I<A>, b: I<B>, f: ProductFunc<A, B, R>): I<R> {
-    return flatMap(a, av => flatMap(b, bv => f(av, bv)));
+    const bs = sequence(b);
+    return sequence(a).flatMap(av => bs.flatMap(bv => f(av, bv)));
 }
 
 export function range(a: number, b: number): I<number> {
