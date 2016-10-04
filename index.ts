@@ -44,6 +44,12 @@ export abstract class Sequence<T> implements Iterable<T> {
         return this.flatMap(filterFuncToFlatMapFunc(f));
     }
 
+    forEach(f: (v: T) => void): void {
+        for (const v of this) {
+            f(v);
+        }
+    }
+
     flatMap<R>(f: FlatMapFunc<T, R>): Sequence<R> {
         const a = this;
         function *result() {
@@ -54,13 +60,19 @@ export abstract class Sequence<T> implements Iterable<T> {
         return sequence(result);
     }
 
+    groupBy(key: KeyFunc<T>, reduce: ReduceFunc<T>): Map<T> {
+        const result = new GroupBy(key, reduce);
+        this.forEach(v => result.add(v));
+        return result.map;
+    }
+
     map<R>(f: MapFunc<T, R>): Sequence<R> {
         return this.flatMap(x => [f(x)]);
     }
 
     reduce(r: ReduceFunc<T>): T|undefined {
         let result: T|undefined = undefined;
-        forEach(this, v => {
+        this.forEach(v => {
             result = result === undefined ? v : r(result, v);
         });
         return result;
@@ -159,12 +171,6 @@ export function sum(c: I<number>): number {
     return sequence(c).reduce((a, b) => a + b) || 0;
 }
 
-export function forEach<T>(c: I<T>, f: (v: T) => void): void {
-    for (const v of sequence(c)) {
-        f(v);
-    }
-}
-
 export type KeyFunc<T> = (value: T) => string;
 
 export type ReduceFunc<T> = (a: T, b: T) => T;
@@ -198,12 +204,6 @@ class GroupBy<T> {
         const old = this.map[k];
         this.map[k] = old === undefined ? v : this._reduce(old, v);
     }
-}
-
-export function groupBy<T>(c: I<T>, key: KeyFunc<T>, reduce: ReduceFunc<T>): Map<T> {
-    const result = new GroupBy(key, reduce);
-    forEach(c, v => result.add(v));
-    return result.map;
 }
 
 export function product<A, B, R>(a: I<A>, b: I<B>, f: ProductFunc<A, B, R>): I<R> {

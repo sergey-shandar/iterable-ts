@@ -24,9 +24,21 @@ describe("class Sequence", () => {
         iterableEqual(iterable.sequence([1, 2, 3]).drop(5), []);
         iterableEqual(iterable.sequence([1, 2, 3]).drop(0), [1, 2, 3]);
     })
+    it("forEach()", () => {
+        const i = [ 1, 2, 3 ];
+        const x: string[] = [];
+        iterable.sequence(i).forEach(v => x.push(v.toString()));
+        x.should.deep.equal(["1", "2", "3"]);
+    });
     it("flatMap()", () => {
         function *x() { yield 1; yield 4; }
         iterableEqual(iterable.sequence(x).flatMap(v => [v, v]), [1, 1, 4, 4]);
+    });
+    it("groupBy()", () => {
+        const m = iterable
+            .sequence([ "a", "b", "x", "b" ])
+            .groupBy(k => k, (a, b) => a + b);
+        m.should.deep.equal({ "a": "a", "b": "bb", "x": "x" });
     });
 });
 
@@ -51,17 +63,7 @@ it("sum()", () => {
     iterable.sum([]).should.equal(0);
 });
 it("identity()", () => iterableEqual(iterable.flatMapIdentity(5), [5]));
-it("groupBy()", () => {
-    const m = iterable.groupBy([ "a", "b", "x", "b" ], k => k, (a, b) => a + b);
-    m.should.deep.equal({ "a": "a", "b": "bb", "x": "x" });
-});
 it("values()", () => iterableEqual(iterable.values({ a: "x", b: "c"}), ["x", "c"]));
-it("forEach()", () => {
-    const i = [ 1, 2, 3 ];
-    const x: string[] = [];
-    iterable.forEach(i, v => x.push(v.toString()));
-    x.should.deep.equal(["1", "2", "3"]);
-});
 it("cache()", () => {
     let counter = 0;
     function *result() {
