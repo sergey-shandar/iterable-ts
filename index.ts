@@ -113,6 +113,22 @@ export abstract class Sequence<T> implements Iterable<T> {
         }
         return sequence(result);
     }
+
+    join(toString: MapFunc<T, string>, s: string = ","): string {
+        return this.map(toString).reduce((a, b) => a + s + b) || "";
+    }
+
+    min(toNumber: MapFunc<T, number>): number|undefined {
+        return this.map(toNumber).reduce((a, b) => a < b ? a : b);
+    }
+
+    max(toNumber: MapFunc<T, number>): number|undefined {
+        return this.map(toNumber).reduce((a, b) => a > b ? a : b);
+    }
+
+    sum(toNumber: (v: T) => number): number {
+        return this.map(toNumber).reduce((a, b) => a + b) || 0;
+    }
 }
 
 class ArraySequence<T> extends Sequence<T> {
@@ -126,8 +142,6 @@ class ArraySequence<T> extends Sequence<T> {
     size() { return this.toArray().length; }
 
     get(i: number) { return this.toArray()[i]; }
-
-    toArraySequence() { return this; }
 }
 
 class IteratorSequence<T> extends Sequence<T> {
@@ -138,7 +152,7 @@ class IteratorSequence<T> extends Sequence<T> {
 
     [Symbol.iterator]() { return this._f(); }
 
-    size() { return sum(this.map(() => 1)); }
+    size() { return this.sum(() => 1); }
 
     get(i: number) {
         for (const v of this.withIndex()) {
@@ -148,8 +162,6 @@ class IteratorSequence<T> extends Sequence<T> {
         }
         return undefined;
     }
-
-    toArraySequence() { return new ArraySequence(this.toArray()); }
 }
 
 export type I<T> = Sequence<T> | (() => IterableIterator<T>) | T[];
@@ -170,15 +182,7 @@ export function array<T>(...a: T[]): Sequence<T> {
 
 export type FlatMapFunc<T, O> = (value: T) => I<O>;
 
-export function flatMapIdentity<T>(value: T): Sequence<T> {
-    return array(value);
-}
-
 export type MapFunc<T, R> = (value: T) => R;
-
-export function flatten<T>(c: I<I<T>>): Sequence<T> {
-    return sequence<I<T>>(c).flatMap(v => v);
-}
 
 export type FilterFunc<T> = MapFunc<T, boolean>;
 
@@ -188,22 +192,6 @@ export function filterFuncToFlatMapFunc<T>(filterFunc: FilterFunc<T>): FlatMapFu
 
 export class WithIndex<T> {
     constructor(public readonly value: T, public readonly index: number) {}
-}
-
-export function join(c: I<string>, s: string = ","): string {
-    return sequence(c).reduce((a, b) => a + s + b) || "";
-}
-
-export function min(c: I<number>): number|undefined {
-    return sequence(c).reduce((a, b) => a < b ? a : b);
-}
-
-export function max(c: I<number>): number|undefined {
-    return sequence(c).reduce((a, b) => a > b ? a : b);
-}
-
-export function sum(c: I<number>): number {
-    return sequence(c).reduce((a, b) => a + b) || 0;
 }
 
 export type KeyFunc<T> = (value: T) => string;
@@ -226,7 +214,7 @@ export function keys<T>(m: Map<T>): Sequence<string> {
 }
 
 export function values<T>(m: Map<T>): Sequence<T> {
-    return sequence(keys(m)).map(k => m[k]);
+    return keys(m).map(k => m[k]);
 }
 
 class GroupBy<T> {
