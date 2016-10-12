@@ -45,6 +45,9 @@ describe("class Sequence", () => {
         function *x() { yield 1; yield 4; }
         iterableEqual(iterable.sequence(x).flatMap(v => [v, v]), [1, 1, 4, 4]);
     });
+    it("flatMap() flatten", () => {
+        iterableEqual(iterable.array([5, 3], [7], [], [89]).flatMap(v => v), [5, 3, 7, 89]);
+    })
     it("groupBy()", () => {
         const m = iterable
             .sequence([ "a", "b", "x", "b" ])
@@ -70,41 +73,22 @@ describe("class Sequence", () => {
         (<number> iterable.sequence(x).get(1)).should.equal(3);
         chai.assert.isUndefined(iterable.sequence(x).get(2));
     })
-    it("toArraySequence()", () => {
-        const x = [ 2, 3];
-        iterable.sequence(x).toArraySequence().toArray().should.equal(x);
-        const a = iterable.sequence(x).map(v => v * v).toArraySequence();
-        const y = a.toArray();
-        y.should.deep.equal([4, 9]);
-        y.should.equal(a.toArray());
+    it("join()", () => {
+        iterable.array('a', 'b', 'c').join(v => v, '~').should.equal("a~b~c");
+        iterable.array<string>().join(v => v, '~').should.equal("");
+    })
+    it("min()", () => {
+        chai.assert.equal(iterable.array(4, 2, 8, 6).min(v => v), 2);
+        chai.assert.equal(iterable.array<number>().min(v => v), undefined);
+    })
+    it("max()", () => {
+        chai.assert.equal(iterable.array(4, 2, 8, 6).max(v => v), 8);
+        chai.assert.equal(iterable.array<number>().max(v => v), undefined);
+    })
+    it("sum()", () => {
+        iterable.array(4, 2, 8, 6).sum(v => v).should.equal(20);
+        iterable.array<number>().sum(v => v).should.equal(0);
     })
 });
-it("join()", () => {
-    iterable.join(['a', 'b', 'c'], '~').should.equal("a~b~c");
-    iterable.join([], '~').should.equal("");
-})
-it("flatten()", () => {
-    function *x() { yield 1; yield 4; }
-    iterableEqual(iterable.flatten([x, x]), [ 1, 4, 1, 4]);
-});
-it("min()", () => {
-    chai.assert.equal(iterable.min([4, 2, 8, 6]), 2);
-    chai.assert.equal(iterable.min([]), undefined);
-});
-it("max()", () => {
-    chai.assert.equal(iterable.max([4, 2, 8, 6]), 8);
-    chai.assert.equal(iterable.max([]), undefined);
-});
-it("sum()", () => {
-    iterable.sum([4, 2, 8, 6]).should.equal(20);
-    iterable.sum([]).should.equal(0);
-});
-it("identity()", () => iterableEqual(iterable.flatMapIdentity(5), [5]));
 it("values()", () => iterableEqual(iterable.values({ a: "x", b: "c"}), ["x", "c"]));
 it("range()", () => iterableEqual(iterable.range(10, 15), [10, 11, 12, 13, 14]));
-it("productFuncS()", () => {
-    function product(a: number, b: number): number[] {
-        return [a, b];
-    }
-    iterableEqual(iterable.productFuncS(product)(1, 2), [1, 2]);
-});

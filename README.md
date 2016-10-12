@@ -10,5 +10,12 @@ ECMAScript This-Binding Syntax Proposal](https://github.com/tc39/proposal-bind-o
 ## Iterable Type
 
 ```ts
-type I<T> = Stateless<T> | () => Iterable<T> | T[];
+type I<T> = Sequence<T> | () => Iterable<T> | T[];
+```
+
+## Usage
+
+```ts
+const x = [1, 2];
+const y = sequence(x).flatMap(v => v * v).toArray();
 ```
