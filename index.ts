@@ -13,7 +13,7 @@ export function lazy<T>(f: () => T): () => T {
 }
 
 export function immediate(): Promise<void> {
-    return new Promise(resolve => setImmediate(resolve));
+    return new Promise<void>(resolve => setImmediate(resolve));
 }
 
 export abstract class Sequence<T> implements Iterable<T> {
