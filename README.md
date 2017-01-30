@@ -17,5 +17,6 @@ type I<T> = Sequence<T> | () => Iterable<T> | T[];
 
 ```ts
 const x = [1, 2];
-const y = sequence(x).flatMap(v => v * v).toArray();
+const y = sequence(x).flatMap(v => v * v).toArraySequence();
+const z = array(1, 2).filter(v => v != 2);
 ```
