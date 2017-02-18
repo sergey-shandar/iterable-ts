@@ -1,13 +1,13 @@
 {
   "name": "iterable-ts",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A TypeScript library for working with iterable types",
   "main": "index.js",
   "scripts": {
     "prepublish": "tsc",
     "test": "tsc && istanbul cover node_modules/mocha/bin/_mocha && istanbul check-coverage",
     "mocha": "tsc && mocha",
-    "typedoc": "typedoc",
+    "typedoc": "typedoc --out doc --excludePrivate --target es6 --exclude ./**/* ",
     "istanbul": "istanbul"
   },
   "repository": {
