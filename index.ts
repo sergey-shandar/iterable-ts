@@ -95,12 +95,16 @@ export function iterableSeq<T>(f: () => Iterator<T>): IterableSeq<T> {
     return new IterableSeq(f);
 }
 
-export function values<T>(a: Seq<T>): IterableSeq<T> {
-    return a instanceof IterableSeq ? a : iterableSeq(() => a[Symbol.iterator]());
+export function fromIterable<T>(a: Iterable<T>): IterableSeq<T> {
+    return iterableSeq(() => a[Symbol.iterator]());
+}
+
+export function chain<T>(a: Seq<T>): IterableSeq<T> {
+    return a instanceof IterableSeq ? a : fromIterable(a);
 }
 
 export function seq<T>(...args: T[]): IterableSeq<T> {
-    return values(args);
+    return fromIterable(args);
 }
 
 export function concatSeq<A, B>(a: Seq<A>, b: Seq<B>): IterableSeq<A|B> {
@@ -214,7 +218,7 @@ export function reduce<T, R>(x: Seq<T>, f: ReduceFunc<R, T>, initial?: R): R|und
 }
 
 export function slice<T>(x: Seq<T>, begin?: number, end?: number): IterableSeq<T> {
-    const prefix = end === undefined ? values(x) : take(x, end);
+    const prefix = end === undefined ? chain(x) : take(x, end);
     return begin === undefined ? prefix : drop(prefix, begin);
 }
 
@@ -287,6 +291,15 @@ export function range(start: number, end?: number): IterableSeq<number> {
     function *result() {
         for (let i = start; i < end; ++i) {
             yield i;
+        }
+    }
+    return iterableSeq(result);
+}
+
+export function values<T>(map: ReadOnlyMap<T>): IterableSeq<T> {
+    function *result(): Iterator<T> {
+        for (var key in map) {
+            yield map[key];
         }
     }
     return iterableSeq(result);
