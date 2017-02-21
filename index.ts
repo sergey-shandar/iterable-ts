@@ -18,69 +18,68 @@ export function entry<T>(v: T, i: number): Entry<T> {
     return [i, v];
 }
 
-export interface Seq<T> extends Iterable<T> {
-    concat<X>(...args: X[]): Seq<T|X>;
+export interface ArrayIterable<T> extends Iterable<T> {
+    concat<X>(...args: X[][]): ArrayIterable<T|X>;
     entries(): Iterable<Entry<T>>;
     every(callback: MapFunc<T, boolean>): boolean;
-    filter(callback: MapFunc<T, boolean>): Seq<T>;
+    filter(callback: MapFunc<T, boolean>): ArrayIterable<T>;
     find(callback: MapFunc<T, boolean>): T|undefined;
     findIndex(callback: MapFunc<T, boolean>): number;
     forEach(callback: MapFunc<T, void>): void;
     indexOf(searchElement: T, index?: number): number;
     join(separator?: string): string;
     keys(): Iterable<number>;
-    map<R>(callback: MapFunc<T, R>): Seq<R>;
+    map<R>(callback: MapFunc<T, R>): ArrayIterable<R>;
     reduce(callback: ReduceFunc<T, T>): T|undefined;
     reduce<R>(callback: ReduceFunc<R, T>, initial: R): R;
-    slice(begin?: number, end?: number): Seq<T>;
+    slice(begin?: number, end?: number): ArrayIterable<T>;
     some(callback: MapFunc<T, boolean>): boolean;
     values(): Iterable<T>;
 }
 
-export interface ReadOnlyArray<T> extends Seq<T> {
+export interface ReadOnlyArray<T> extends ArrayIterable<T> {
     readonly length: number;
     readonly [i: number]: T;
-    concat<X>(...args: X[]): (T|X)[];
+    concat<X>(...args: X[][]): (T|X)[];
     filter(callback: MapFunc<T, boolean>): T[];
     map<R>(callback: MapFunc<T, R>): R[];
     slice(begin?: number, end?: number): T[];
 }
 
-export class IterableSeq<T> implements Seq<T> {
+export class IterableEx<T> implements ArrayIterable<T> {
     constructor(private readonly createIterator: () => Iterator<T>) {}
 
     [Symbol.iterator](): Iterator<T> { return this.createIterator(); }
-    concat<X>(...args: X[]): IterableSeq<T|X> { return concatSeq(this, args); }
-    entries(): IterableSeq<Entry<T>> { return entries(this); }
+    concat<X>(...args: ArrayIterable<X>[]): IterableEx<T|X> { return concat(this, ...args); }
+    entries(): IterableEx<Entry<T>> { return entries(this); }
     every(f: MapFunc<T, boolean>): boolean { return every(this, f); }
-    filter(f: MapFunc<T, boolean>): IterableSeq<T> { return filter(this, f); }
+    filter(f: MapFunc<T, boolean>): IterableEx<T> { return filter(this, f); }
     find(f: MapFunc<T, boolean>): T|undefined { return find(this, f); }
     findIndex(f: MapFunc<T, boolean>): number { return findIndex(this, f); }
     forEach(f: MapFunc<T, void>): void { return forEach(this, f); }
     indexOf(s: T, index?: number): number { return indexOf(this, s, index); }
     join(separator?: string): string { return join(this, separator); }
-    keys(): IterableSeq<number> { return keys(this); }
-    map<R>(f: MapFunc<T, R>): IterableSeq<R> { return map(this, f); }
+    keys(): IterableEx<number> { return keys(this); }
+    map<R>(f: MapFunc<T, R>): IterableEx<R> { return map(this, f); }
     reduce(callback: ReduceFunc<T, T>): T|undefined;
     reduce<R>(f: ReduceFunc<R, T>, initial: R): R;
     reduce<R>(f: ReduceFunc<R, T>, initial?: R): R|undefined { return reduce(this, f, initial); }
-    slice(begin?: number, end?: number): IterableSeq<T> { return slice(this, begin, end); }
+    slice(begin?: number, end?: number): IterableEx<T> { return slice(this, begin, end); }
     some(f: MapFunc<T, boolean>): boolean { return some(this, f); }
-    values(): IterableSeq<T> { return this; }
+    values(): IterableEx<T> { return this; }
 
-    concatSeq<X>(b: Seq<X>): IterableSeq<T|X> { return concatSeq(this, b); }
-    drop(n: number = 1): IterableSeq<T> { return drop(this, n); }
-    dropWhile(f: MapFunc<T, boolean>): IterableSeq<T> { return dropWhile(this, f); }
+    drop(n: number = 1): IterableEx<T> { return drop(this, n); }
+    dropWhile(f: MapFunc<T, boolean>): IterableEx<T> { return dropWhile(this, f); }
     first(): T|undefined { return first(this); }
-    flatMap<X>(f: MapFunc<T, Seq<X>>): IterableSeq<X> { return flatMap(this, f); }
+    flatMap<X>(f: MapFunc<T, ArrayIterable<X>>): IterableEx<X> { return flatMap(this, f); }
     groupBy(k: MapFunc<T, string>): Map<T[]> { return groupBy(this, k); }
     groupReduce(k: MapFunc<T, string>, r: (c: T, v: T) => T): Map<T>;
     groupReduce<R>(k: MapFunc<T, string>, r: (c: R, v: T) => R, initial: R): Map<R>;
     groupReduce<R>(k: MapFunc<T, string>, r: (c: R, v: T) => R, initial?: R): Map<R> {
         return groupReduce(this, k, r, <R> initial);
     }
-    take(n: number = 1): IterableSeq<T> { return take(this, n); }
-    takeWhile(f: MapFunc<T, boolean>): IterableSeq<T> { return takeWhile(this, f); }
+    take(n: number = 1): IterableEx<T> { return take(this, n); }
+    takeWhile(f: MapFunc<T, boolean>): IterableEx<T> { return takeWhile(this, f); }
 
     toArray(): T[] {
         const result = [];
@@ -91,35 +90,37 @@ export class IterableSeq<T> implements Seq<T> {
     }
 }
 
-export function iterableSeq<T>(f: () => Iterator<T>): IterableSeq<T> {
-    return new IterableSeq(f);
+export function iterableEx<T>(f: () => Iterator<T>): IterableEx<T> {
+    return new IterableEx(f);
 }
 
-export function fromIterable<T>(a: Iterable<T>): IterableSeq<T> {
-    return iterableSeq(() => a[Symbol.iterator]());
+export function ex<T>(a: Iterable<T>): IterableEx<T> {
+    return iterableEx(() => a[Symbol.iterator]());
 }
 
-export function chain<T>(a: Seq<T>): IterableSeq<T> {
-    return a instanceof IterableSeq ? a : fromIterable(a);
+export function chain<T>(a: ArrayIterable<T>): IterableEx<T> {
+    return a instanceof IterableEx ? a : ex(a);
 }
 
-export function seq<T>(...args: T[]): IterableSeq<T> {
-    return fromIterable(args);
+export function seq<T>(...args: T[]): IterableEx<T> {
+    return ex(args);
 }
 
-export function concatSeq<A, B>(a: Seq<A>, b: Seq<B>): IterableSeq<A|B> {
+export function concat<A, B>(a: ArrayIterable<A>, ...bs: ArrayIterable<B>[]): IterableEx<A|B> {
     function *result() {
         yield *a;
-        yield *b;
+        for (const b of bs) {
+            yield *b;
+        }
     }
-    return iterableSeq(result);
+    return iterableEx(result);
 }
 
-export function drop<T>(x: Seq<T>, n: number = 1): IterableSeq<T> {
+export function drop<T>(x: ArrayIterable<T>, n: number = 1): IterableEx<T> {
     return dropWhile(x, (_, i) => i < n);
 }
 
-export function dropWhile<T>(x: Seq<T>, f: MapFunc<T, boolean>): IterableSeq<T> {
+export function dropWhile<T>(x: ArrayIterable<T>, f: MapFunc<T, boolean>): IterableEx<T> {
     function *result() {
         let drop = true;
         for (const [i, v] of entries(x)) {
@@ -127,18 +128,18 @@ export function dropWhile<T>(x: Seq<T>, f: MapFunc<T, boolean>): IterableSeq<T> 
             if (!drop) yield v;
         }
     }
-    return iterableSeq(result);
+    return iterableEx(result);
 }
 
-export function entries<T>(x: Seq<T>): IterableSeq<Entry<T>> {
+export function entries<T>(x: ArrayIterable<T>): IterableEx<Entry<T>> {
     return map(x, entry);
 }
 
-export function every<T>(x: Seq<T>, f: MapFunc<T, boolean>): boolean {
+export function every<T>(x: ArrayIterable<T>, f: MapFunc<T, boolean>): boolean {
     return !some(x, (v, i) => !f(v, i));
 }
 
-export function filter<T>(x: Seq<T>, f: MapFunc<T, boolean>): IterableSeq<T> {
+export function filter<T>(x: ArrayIterable<T>, f: MapFunc<T, boolean>): IterableEx<T> {
     function *result() {
         for (const [i, v] of entries(x)) {
             if (f(v, i)) {
@@ -146,56 +147,56 @@ export function filter<T>(x: Seq<T>, f: MapFunc<T, boolean>): IterableSeq<T> {
             }
         }
     }
-    return iterableSeq(result);
+    return iterableEx(result);
 }
 
-export function find<T>(x: Seq<T>, f: MapFunc<T, boolean>): T|undefined {
+export function find<T>(x: ArrayIterable<T>, f: MapFunc<T, boolean>): T|undefined {
     return first(filter(x, f));
 }
 
-export function findIndex<T>(x: Seq<T>, f: MapFunc<T, boolean>): number {
+export function findIndex<T>(x: ArrayIterable<T>, f: MapFunc<T, boolean>): number {
     const e = find(entries(x), e => f(e[1], e[0]));
     return e === undefined ? -1 : e[0];
 }
 
-export function first<T>(x: Seq<T>): T|undefined {
+export function first<T>(x: ArrayIterable<T>): T|undefined {
     for (const v of x) {
         return v;
     }
     return undefined;
 }
 
-export function flatMap<T, R>(x: Seq<T>, f: MapFunc<T, Seq<R>>): IterableSeq<R> {
+export function flatMap<T, R>(x: ArrayIterable<T>, f: MapFunc<T, ArrayIterable<R>>): IterableEx<R> {
     function *result() {
         for (const [i, v] of entries(x)) {
             yield *f(v, i);
         }
     }
-    return iterableSeq(result);
+    return iterableEx(result);
 }
 
-export function forEach<T>(x: Seq<T>, f: MapFunc<T, void>): void {
+export function forEach<T>(x: ArrayIterable<T>, f: MapFunc<T, void>): void {
     for (const [i, v] of entries(x)) {
         f(v, i);
     }
 }
 
-export function indexOf<T>(x: Seq<T>, s: T, index?: number): number {
+export function indexOf<T>(x: ArrayIterable<T>, s: T, index?: number): number {
     index = index === undefined ? 0 : index;
     return findIndex(x, (v, i) => index <= i && v === s);
 }
 
-export function join<T>(x: Seq<T>, s?: string): string {
+export function join<T>(x: ArrayIterable<T>, s?: string): string {
     s = s === undefined ? "" : s;
     const result = map(x, String).reduce((r, v) => r + s + v);
     return result === undefined ? "" : result;
 }
 
-export function keys<T>(x: Seq<T>): IterableSeq<number> {
+export function keys<T>(x: ArrayIterable<T>): IterableEx<number> {
     return map(x, (_, i) => i);
 }
 
-export function map<T, R>(x: Seq<T>, f: MapFunc<T, R>): IterableSeq<R> {
+export function map<T, R>(x: ArrayIterable<T>, f: MapFunc<T, R>): IterableEx<R> {
     function *result() {
         let i = 0;
         for (const v of x) {
@@ -203,58 +204,58 @@ export function map<T, R>(x: Seq<T>, f: MapFunc<T, R>): IterableSeq<R> {
             ++i;
         }
     }
-    return iterableSeq(result);
+    return iterableEx(result);
 }
 
-export function reduce<T>(x: Seq<T>, f: ReduceFunc<T, T>): T|undefined;
+export function reduce<T>(x: ArrayIterable<T>, f: ReduceFunc<T, T>): T|undefined;
 
-export function reduce<T, R>(x: Seq<T>, f: ReduceFunc<R, T>, initial: R): R;
+export function reduce<T, R>(x: ArrayIterable<T>, f: ReduceFunc<R, T>, initial: R): R;
 
-export function reduce<T, R>(x: Seq<T>, f: ReduceFunc<R, T>, initial?: R): R|undefined {
+export function reduce<T, R>(x: ArrayIterable<T>, f: ReduceFunc<R, T>, initial?: R): R|undefined {
     for (const v of x) {
         initial = initial === undefined ? <R> <any> v : f(initial, v);
     }
     return initial;
 }
 
-export function slice<T>(x: Seq<T>, begin?: number, end?: number): IterableSeq<T> {
+export function slice<T>(x: ArrayIterable<T>, begin?: number, end?: number): IterableEx<T> {
     const prefix = end === undefined ? chain(x) : take(x, end);
     return begin === undefined ? prefix : drop(prefix, begin);
 }
 
-export function some<T>(x: Seq<T>, f: MapFunc<T, boolean>): boolean {
+export function some<T>(x: ArrayIterable<T>, f: MapFunc<T, boolean>): boolean {
     return find(x, f) !== undefined;
 }
 
-export function take<T>(x: Seq<T>, n: number = 1): IterableSeq<T> {
+export function take<T>(x: ArrayIterable<T>, n: number = 1): IterableEx<T> {
     return takeWhile(x, (_, i) => i < n);
 }
 
-export function takeWhile<T>(x: Seq<T>, f: MapFunc<T, boolean>): IterableSeq<T> {
+export function takeWhile<T>(x: ArrayIterable<T>, f: MapFunc<T, boolean>): IterableEx<T> {
     function *result() {
         for (const [i, v] of entries(x)) {
             if (!f(v, i)) break;
             yield v;
         }
     }
-    return iterableSeq(result);
+    return iterableEx(result);
 }
 
 export function groupReduce<T>(
-    x: Seq<T>,
+    x: ArrayIterable<T>,
     k: MapFunc<T, string>,
     r: (r: T, v: T) => T):
     Map<T>;
 
 export function groupReduce<T, R>(
-    x: Seq<T>,
+    x: ArrayIterable<T>,
     k: MapFunc<T, string>,
     r: (r: R, v: T) => R,
     intial: R):
     Map<R>;
 
 export function groupReduce<T, R>(
-    x: Seq<T>,
+    x: ArrayIterable<T>,
     k: MapFunc<T, string>,
     r: (r: R, v: T) => R,
     initial?: R):
@@ -271,19 +272,19 @@ export function groupReduce<T, R>(
     return result;
 }
 
-export function groupBy<T>(x: Seq<T>, k: MapFunc<T, string>): Map<T[]> {
-    return groupReduce(x, k, (r: T[], v) => r.concat(v), []);
+export function groupBy<T>(x: ArrayIterable<T>, k: MapFunc<T, string>): Map<T[]> {
+    return groupReduce(x, k, (r: T[], v) => r.concat([v]), []);
 }
 
-export function flatten<T>(s: Seq<Seq<T>>): IterableSeq<T> {
+export function flatten<T>(s: ArrayIterable<ArrayIterable<T>>): IterableEx<T> {
     return flatMap(s, v => v);
 }
 
-export function range(end: number): IterableSeq<number>;
+export function range(end: number): IterableEx<number>;
 
-export function range(start: number, end: number): IterableSeq<number>;
+export function range(start: number, end: number): IterableEx<number>;
 
-export function range(start: number, end?: number): IterableSeq<number> {
+export function range(start: number, end?: number): IterableEx<number> {
     if (end === undefined) {
         end = start;
         start = 0;
@@ -293,14 +294,14 @@ export function range(start: number, end?: number): IterableSeq<number> {
             yield i;
         }
     }
-    return iterableSeq(result);
+    return iterableEx(result);
 }
 
-export function values<T>(map: ReadOnlyMap<T>): IterableSeq<T> {
+export function values<T>(map: ReadOnlyMap<T>): IterableEx<T> {
     function *result(): Iterator<T> {
         for (var key in map) {
             yield map[key];
         }
     }
-    return iterableSeq(result);
+    return iterableEx(result);
 }

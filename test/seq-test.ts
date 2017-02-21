@@ -4,9 +4,9 @@ import "mocha";
 
 chai.should();
 
-describe("class IterableSeq", () => {
+describe("class IterableEx", () => {
     it("concat()", () => {
-        _.chain([1, 2, 3]).concat("a", "b", "c").toArray().should.deep.eq([1, 2, 3, "a", "b", "c"])
+        _.chain([1, 2, 3]).concat(["a", "b"], ["c"]).toArray().should.deep.eq([1, 2, 3, "a", "b", "c"])
     })
     it("entries()", () => {
         _.chain(["q", "w", "e"]).entries().toArray().should.deep.eq([[0, "q"], [1, "w"], [2, "e"]]);
@@ -59,8 +59,8 @@ describe("class IterableSeq", () => {
     it("values()", () => {
         _.seq(1, 2, 3).values().toArray().should.deep.eq([1, 2, 3]);
     })
-    it("concatSeq()", () => {
-        _.seq(1, 2, 3).concatSeq([5, 6, 7]).toArray().should.deep.eq([1, 2, 3, 5, 6, 7]);
+    it("concat()", () => {
+        _.seq(1, 2, 3).concat([5, 6, 7]).toArray().should.deep.eq([1, 2, 3, 5, 6, 7]);
     })
     it("drop()", () => {
         _.seq(1, 2, 3).drop().toArray().should.deep.eq([2, 3]);
@@ -94,6 +94,11 @@ describe("class IterableSeq", () => {
     it("takeWhile()", () => {
         _.seq(1, 2, 3).takeWhile(x => x <= 2).toArray().should.deep.eq([1, 2]);
     })
+})
+
+it("class ReadOnlyArray", () => {
+    const x: _.ReadOnlyArray<string> = [ "a" ];
+    x.should.deep.eq([ "a" ]);
 })
 
 it("flatten()", () => {
