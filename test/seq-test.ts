@@ -4,16 +4,16 @@ import "mocha";
 
 chai.should();
 
-describe("class IterableSeq", () => {
+describe("class IterableEx", () => {
     it("concat()", () => {
-        _.values([1, 2, 3]).concat("a", "b", "c").toArray().should.deep.eq([1, 2, 3, "a", "b", "c"])
+        _.chain([1, 2, 3]).concat(["a", "b"], ["c"]).toArray().should.deep.eq([1, 2, 3, "a", "b", "c"])
     })
     it("entries()", () => {
-        _.values(["q", "w", "e"]).entries().toArray().should.deep.eq([[0, "q"], [1, "w"], [2, "e"]]);
+        _.chain(["q", "w", "e"]).entries().toArray().should.deep.eq([[0, "q"], [1, "w"], [2, "e"]]);
     })
     it("every()", () => {
         _.seq(false, true, false).every(a => a).should.eq(false);
-        _.values(<boolean[]>[true, true, true]).every(a => a).should.eq(true);
+        _.chain(<boolean[]>[true, true, true]).every(a => a).should.eq(true);
     })
     it("filter()", () => {
         _.seq(1, 2, 3).filter(x => x < 3).toArray().should.deep.eq([1, 2]);
@@ -59,8 +59,8 @@ describe("class IterableSeq", () => {
     it("values()", () => {
         _.seq(1, 2, 3).values().toArray().should.deep.eq([1, 2, 3]);
     })
-    it("concatSeq()", () => {
-        _.seq(1, 2, 3).concatSeq([5, 6, 7]).toArray().should.deep.eq([1, 2, 3, 5, 6, 7]);
+    it("concat()", () => {
+        _.seq(1, 2, 3).concat([5, 6, 7]).toArray().should.deep.eq([1, 2, 3, 5, 6, 7]);
     })
     it("drop()", () => {
         _.seq(1, 2, 3).drop().toArray().should.deep.eq([2, 3]);
@@ -96,6 +96,11 @@ describe("class IterableSeq", () => {
     })
 })
 
+it("class ReadOnlyArray", () => {
+    const x: _.ReadOnlyArray<string> = [ "a" ];
+    x.should.deep.eq([ "a" ]);
+})
+
 it("flatten()", () => {
     _.flatten(_.seq([1, 2, 3], [10], [20, 30])).toArray().should.deep.eq([1, 2, 3, 10, 20, 30]);
 })
@@ -103,4 +108,8 @@ it("flatten()", () => {
 it("range()", () => {
     _.range(2, 5).toArray().should.deep.eq([2, 3, 4]);
     _.range(5).toArray().should.deep.eq([0, 1, 2, 3, 4]);
+})
+
+it("values()", () => {
+    _.values({ "a": 1, "b": 2, "c": 3 }).toArray().should.deep.eq([1, 2, 3]);
 })
