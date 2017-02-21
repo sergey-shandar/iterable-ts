@@ -77,7 +77,14 @@ describe("class IterableSeq", () => {
     })
     it("groupBy", () => {
         _.seq(1, 2, 3, 1, 4, 5).groupBy(String).should.deep
-            .eq({ "1": [1, 1], "2": [2], "3": [3], "4": [4], "5": [5]});
+            .eq({ "1": [1, 1], "2": [2], "3": [3], "4": [4], "5": [5] });
+    })
+    it("groupReduce()", () => {
+        _.seq(1, 2, 3, 1, 4, 5)
+            .groupReduce(String, (a, b) => a + b)
+            .should
+            .deep
+            .eq({ "1": 2, "2": 2, "3": 3, "4": 4, "5": 5 });
     })
     it("take()", () => {
         _.seq(1, 2, 3).take().toArray().should.deep.eq([1]);
