@@ -75,6 +75,10 @@ describe("class IterableSeq", () => {
     it("flatMap()", () => {
         _.seq(1, 2, 3).flatMap(x => [x, x * x]).toArray().should.deep.eq([1, 1, 2, 4, 3, 9]);
     })
+    it("groupBy", () => {
+        _.seq(1, 2, 3, 1, 4, 5).groupBy(String).should.deep
+            .eq({ "1": [1, 1], "2": [2], "3": [3], "4": [4], "5": [5]});
+    })
     it("take()", () => {
         _.seq(1, 2, 3).take().toArray().should.deep.eq([1]);
         _.seq(1, 2, 3).take(4).toArray().should.deep.eq([1, 2, 3]);
@@ -85,7 +89,7 @@ describe("class IterableSeq", () => {
     })
 })
 
-it("flattwn()", () => {
+it("flatten()", () => {
     _.flatten(_.seq([1, 2, 3], [10], [20, 30])).toArray().should.deep.eq([1, 2, 3, 10, 20, 30]);
 })
 

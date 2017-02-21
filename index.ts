@@ -6,6 +6,14 @@ export type CompareFunc<T> = (a: T, b: T) => number;
 
 export type Entry<T> = [number, T];
 
+export interface Map<T> {
+    [key: string]: T
+};
+
+export interface ReadOnlyMap<T> {
+    readonly [key: string]: T
+};
+
 export function entry<T>(v: T, i: number): Entry<T> {
     return [i, v];
 }
@@ -30,8 +38,8 @@ export interface Seq<T> extends Iterable<T> {
 }
 
 export interface ReadOnlyArray<T> extends Seq<T> {
-    length: number;
-    [i: number]: T;
+    readonly length: number;
+    readonly [i: number]: T;
     concat<X>(...args: X[]): (T|X)[];
     filter(callback: MapFunc<T, boolean>): T[];
     map<R>(callback: MapFunc<T, R>): R[];
@@ -65,6 +73,7 @@ export class IterableSeq<T> implements Seq<T> {
     dropWhile(f: MapFunc<T, boolean>): IterableSeq<T> { return dropWhile(this, f); }
     first(): T|undefined { return first(this); }
     flatMap<X>(f: MapFunc<T, Seq<X>>): IterableSeq<X> { return flatMap(this, f); }
+    groupBy(k: MapFunc<T, string>): Map<[T]> { return groupBy(this, k); }
     take(n: number = 1): IterableSeq<T> { return take(this, n); }
     takeWhile(f: MapFunc<T, boolean>): IterableSeq<T> { return takeWhile(this, f); }
 
@@ -220,6 +229,20 @@ export function takeWhile<T>(x: Seq<T>, f: MapFunc<T, boolean>): IterableSeq<T> 
         }
     }
     return iterableSeq(result);
+}
+
+export function groupBy<T>(x: Seq<T>, k: MapFunc<T, string>): Map<[T]> {
+    var result: Map<[T]> = {};
+    x.forEach((v, i) =>{
+        const key = k(v, i);
+        const item = result[key];
+        if (item === undefined) {
+            result[key] = [v];
+        } else {
+            item.push(v);
+        }
+    });
+    return result;
 }
 
 export function flatten<T>(s: Seq<Seq<T>>): IterableSeq<T> {
