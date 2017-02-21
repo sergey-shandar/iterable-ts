@@ -222,6 +222,10 @@ export function takeWhile<T>(x: Seq<T>, f: MapFunc<T, boolean>): IterableSeq<T> 
     return iterableSeq(result);
 }
 
+export function flatten<T>(s: Seq<Seq<T>>): IterableSeq<T> {
+    return flatMap(s, v => v);
+}
+
 export function range(end: number): IterableSeq<number>;
 
 export function range(start: number, end: number): IterableSeq<number>;

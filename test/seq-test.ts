@@ -85,6 +85,10 @@ describe("class IterableSeq", () => {
     })
 })
 
+it("flattwn()", () => {
+    _.flatten(_.seq([1, 2, 3], [10], [20, 30])).toArray().should.deep.eq([1, 2, 3, 10, 20, 30]);
+})
+
 it("range()", () => {
     _.range(2, 5).toArray().should.deep.eq([2, 3, 4]);
     _.range(5).toArray().should.deep.eq([0, 1, 2, 3, 4]);
