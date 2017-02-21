@@ -84,3 +84,8 @@ describe("class IterableSeq", () => {
         _.seq(1, 2, 3).takeWhile(x => x <= 2).toArray().should.deep.eq([1, 2]);
     })
 })
+
+it("range()", () => {
+    _.range(2, 5).toArray().should.deep.eq([2, 3, 4]);
+    _.range(5).toArray().should.deep.eq([0, 1, 2, 3, 4]);
+})

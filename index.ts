@@ -221,3 +221,20 @@ export function takeWhile<T>(x: Seq<T>, f: MapFunc<T, boolean>): IterableSeq<T> 
     }
     return iterableSeq(result);
 }
+
+export function range(end: number): IterableSeq<number>;
+
+export function range(start: number, end: number): IterableSeq<number>;
+
+export function range(start: number, end?: number): IterableSeq<number> {
+    if (end === undefined) {
+        end = start;
+        start = 0;
+    }
+    function *result() {
+        for (let i = start; i < end; ++i) {
+            yield i;
+        }
+    }
+    return iterableSeq(result);
+}
