@@ -6,6 +6,14 @@ export type CompareFunc<T> = (a: T, b: T) => number;
 
 export type Entry<T> = [number, T];
 
+export interface Map<T> {
+    [key: string]: T
+};
+
+export interface ReadOnlyMap<T> {
+    readonly [key: string]: T
+};
+
 export function entry<T>(v: T, i: number): Entry<T> {
     return [i, v];
 }
@@ -30,8 +38,8 @@ export interface Seq<T> extends Iterable<T> {
 }
 
 export interface ReadOnlyArray<T> extends Seq<T> {
-    length: number;
-    [i: number]: T;
+    readonly length: number;
+    readonly [i: number]: T;
     concat<X>(...args: X[]): (T|X)[];
     filter(callback: MapFunc<T, boolean>): T[];
     map<R>(callback: MapFunc<T, R>): R[];
@@ -65,6 +73,12 @@ export class IterableSeq<T> implements Seq<T> {
     dropWhile(f: MapFunc<T, boolean>): IterableSeq<T> { return dropWhile(this, f); }
     first(): T|undefined { return first(this); }
     flatMap<X>(f: MapFunc<T, Seq<X>>): IterableSeq<X> { return flatMap(this, f); }
+    groupBy(k: MapFunc<T, string>): Map<T[]> { return groupBy(this, k); }
+    groupReduce(k: MapFunc<T, string>, r: (c: T, v: T) => T): Map<T>;
+    groupReduce<R>(k: MapFunc<T, string>, r: (c: R, v: T) => R, initial: R): Map<R>;
+    groupReduce<R>(k: MapFunc<T, string>, r: (c: R, v: T) => R, initial?: R): Map<R> {
+        return groupReduce(this, k, r, <R> initial);
+    }
     take(n: number = 1): IterableSeq<T> { return take(this, n); }
     takeWhile(f: MapFunc<T, boolean>): IterableSeq<T> { return takeWhile(this, f); }
 
@@ -217,6 +231,62 @@ export function takeWhile<T>(x: Seq<T>, f: MapFunc<T, boolean>): IterableSeq<T> 
         for (const [i, v] of entries(x)) {
             if (!f(v, i)) break;
             yield v;
+        }
+    }
+    return iterableSeq(result);
+}
+
+export function groupReduce<T>(
+    x: Seq<T>,
+    k: MapFunc<T, string>,
+    r: (r: T, v: T) => T):
+    Map<T>;
+
+export function groupReduce<T, R>(
+    x: Seq<T>,
+    k: MapFunc<T, string>,
+    r: (r: R, v: T) => R,
+    intial: R):
+    Map<R>;
+
+export function groupReduce<T, R>(
+    x: Seq<T>,
+    k: MapFunc<T, string>,
+    r: (r: R, v: T) => R,
+    initial?: R):
+    Map<R> {
+    var result: Map<R> = {};
+    x.forEach((v, i) =>{
+        const key = k(v, i);
+        const c = result[key];
+        result[key] =
+            c !== undefined ? r(c, v) :
+            initial !== undefined ? r(initial, v) :
+            <R> <any> v;
+    });
+    return result;
+}
+
+export function groupBy<T>(x: Seq<T>, k: MapFunc<T, string>): Map<T[]> {
+    return groupReduce(x, k, (r: T[], v) => r.concat(v), []);
+}
+
+export function flatten<T>(s: Seq<Seq<T>>): IterableSeq<T> {
+    return flatMap(s, v => v);
+}
+
+export function range(end: number): IterableSeq<number>;
+
+export function range(start: number, end: number): IterableSeq<number>;
+
+export function range(start: number, end?: number): IterableSeq<number> {
+    if (end === undefined) {
+        end = start;
+        start = 0;
+    }
+    function *result() {
+        for (let i = start; i < end; ++i) {
+            yield i;
         }
     }
     return iterableSeq(result);
