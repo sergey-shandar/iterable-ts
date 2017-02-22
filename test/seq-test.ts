@@ -103,6 +103,8 @@ it("class ReadOnlyArray", () => {
 
 it("flatten()", () => {
     _.flatten(_.seq([1, 2, 3], [10], [20, 30])).toArray().should.deep.eq([1, 2, 3, 10, 20, 30]);
+    _.flatten(_.seq(_.seq(1, 2, 3), _.seq(10), _.seq(20, 30))).toArray().should.deep.eq([1, 2, 3, 10, 20, 30]);
+    _.flatten([_.seq(1, 2, 3), _.seq(10), _.seq(20, 30)]).toArray().should.deep.eq([1, 2, 3, 10, 20, 30]);
 })
 
 it("range()", () => {

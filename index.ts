@@ -276,8 +276,25 @@ export function groupBy<T>(x: ArrayIterable<T>, k: MapFunc<T, string>): Map<T[]>
     return groupReduce(x, k, (r: T[], v) => r.concat([v]), []);
 }
 
+export function flatten<T>(s: ArrayIterable<ArrayIterable<T>>): IterableEx<T>;
+
+export function flatten<T>(s: ArrayIterable<IterableEx<T>>): IterableEx<T>;
+
 export function flatten<T>(s: ArrayIterable<ArrayIterable<T>>): IterableEx<T> {
     return flatMap(s, v => v);
+}
+
+export function product<A, B, R>(a: ArrayIterable<A>, b: ArrayIterable<B>, f: (a: A, b: B) => R):
+    IterableEx<R> {
+
+    function *result() {
+        for (const va of a) {
+            for (const vb of b) {
+                yield f(va, vb);
+            }
+        }
+    }
+    return iterableEx(result);
 }
 
 export function range(end: number): IterableEx<number>;
