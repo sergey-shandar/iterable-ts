@@ -78,6 +78,9 @@ export class IterableEx<T> implements ArrayIterable<T> {
     groupReduce<R>(k: MapFunc<T, string>, r: (c: R, v: T) => R, initial?: R): Map<R> {
         return groupReduce(this, k, r, <R> initial);
     }
+    product<B, R>(b: ArrayIterable<B>, f: (a: T, b: B) => R): IterableEx<R> {
+        return product(this, b, f);
+    }
     take(n: number = 1): IterableEx<T> { return take(this, n); }
     takeWhile(f: MapFunc<T, boolean>): IterableEx<T> { return takeWhile(this, f); }
 
