@@ -86,6 +86,11 @@ describe("class IterableEx", () => {
             .deep
             .eq({ "1": 2, "2": 2, "3": 3, "4": 4, "5": 5 });
     })
+    it("product()", () => {
+        _.seq(1, 2, 3).product(["a", "b", "c"], (a, b) => [a, b]).toArray().should.deep.eq(
+            [ [1, "a"], [1, "b"], [1, "c"], [2, "a"], [2, "b"], [2, "c"], [3, "a"], [3, "b"], [3, "c"] ]
+        );
+    })
     it("take()", () => {
         _.seq(1, 2, 3).take().toArray().should.deep.eq([1]);
         _.seq(1, 2, 3).take(4).toArray().should.deep.eq([1, 2, 3]);
