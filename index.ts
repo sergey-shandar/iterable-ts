@@ -78,6 +78,9 @@ export class IterableEx<T> implements ArrayIterable<T> {
     groupReduce<R>(k: MapFunc<T, string>, r: (c: R, v: T) => R, initial?: R): Map<R> {
         return groupReduce(this, k, r, <R> initial);
     }
+    product<B, R>(b: ArrayIterable<B>, f: (a: T, b: B) => R): IterableEx<R> {
+        return product(this, b, f);
+    }
     take(n: number = 1): IterableEx<T> { return take(this, n); }
     takeWhile(f: MapFunc<T, boolean>): IterableEx<T> { return takeWhile(this, f); }
 
@@ -276,8 +279,25 @@ export function groupBy<T>(x: ArrayIterable<T>, k: MapFunc<T, string>): Map<T[]>
     return groupReduce(x, k, (r: T[], v) => r.concat([v]), []);
 }
 
+export function flatten<T>(s: ArrayIterable<ArrayIterable<T>>): IterableEx<T>;
+
+export function flatten<T>(s: ArrayIterable<IterableEx<T>>): IterableEx<T>;
+
 export function flatten<T>(s: ArrayIterable<ArrayIterable<T>>): IterableEx<T> {
     return flatMap(s, v => v);
+}
+
+export function product<A, B, R>(a: ArrayIterable<A>, b: ArrayIterable<B>, f: (a: A, b: B) => R):
+    IterableEx<R> {
+
+    function *result() {
+        for (const va of a) {
+            for (const vb of b) {
+                yield f(va, vb);
+            }
+        }
+    }
+    return iterableEx(result);
 }
 
 export function range(end: number): IterableEx<number>;
