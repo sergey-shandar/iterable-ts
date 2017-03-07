@@ -325,3 +325,17 @@ export function values<T>(map: ReadOnlyMap<T>): IterableEx<T> {
     }
     return iterableEx(result);
 }
+
+export namespace async {
+
+export function groupReduce<T, R>(
+    progress: (v: T, i: number) => void
+    x: ArrayIterable<T>,
+    k: MapFunc<T, string>,
+    r: (r: R, v: T) => R,
+    initial?: R):
+    Promise<Map<R>> {
+
+}
+
+}
